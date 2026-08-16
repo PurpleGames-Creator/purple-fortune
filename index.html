@@ -138,6 +138,17 @@
     .match .nm{font-size:15.5px;font-weight:800;margin:0 0 3px}
     .match .rg{font-size:11.5px;color:var(--sub)}
     .match.spark{border:1px dashed rgba(229,196,106,.45);background:transparent}
+
+    /* --- 気質のトグル --- */
+    .tog{border-bottom:1px solid rgba(255,255,255,.1)}
+    .tog:last-child{border-bottom:none}
+    .tog summary{list-style:none;cursor:pointer;padding:13px 2px;font-size:14.5px;font-weight:700;
+      display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .tog summary::-webkit-details-marker{display:none}
+    .tog summary::after{content:"＋";color:var(--gold);font-size:15px;flex:none}
+    .tog[open] summary::after{content:"−"}
+    .tog .in{padding:0 2px 15px;font-size:13.5px;color:#e6dffb}
+    .tog .in .cc{color:var(--gold);font-size:12px;letter-spacing:.1em;display:block;margin-bottom:6px}
     .ppl{margin:0;padding:0;list-style:none}
     .ppl li{padding:9px 0;border-bottom:1px dashed rgba(255,255,255,.1);font-size:14px}
     .ppl li:last-child{border-bottom:none}
@@ -157,6 +168,24 @@
       border-top:1px solid rgba(255,255,255,.08);padding-top:18px}
     footer a{color:#9d8ccb}
     .stat{font-size:12px;color:var(--sub);text-align:center;margin:12px 0 0}
+
+    /* --- ニックネーム入力 --- */
+    input[type="text"]{width:100%;padding:13px 12px;font-size:16px;border-radius:11px;
+      background:#251545;color:var(--txt);border:1px solid var(--line)}
+    input[type="text"]::placeholder{color:#7d6ea8}
+    .warn{font-size:11.5px;color:#ffb4a2;margin:8px 0 0;line-height:1.7;display:none}
+    .warn.on{display:block}
+
+    /* --- みんなの結果 --- */
+    .board{margin:0;padding:0;list-style:none}
+    .board li{display:flex;align-items:center;gap:10px;padding:11px 2px;
+      border-bottom:1px dashed rgba(255,255,255,.1)}
+    .board li:last-child{border-bottom:none}
+    .board svg{flex:none}
+    .board .who{font-size:14.5px;font-weight:700;flex:none;max-width:40%;
+      overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .board .ty{font-size:12.5px;color:var(--sub);margin-left:auto;text-align:right}
+    .board .empty{color:var(--sub);font-size:13px;justify-content:center}
   </style>
 </head>
 <body>
@@ -183,6 +212,13 @@
       <button class="btn" id="start">はじめる</button>
     </div>
     <button class="btn sub" id="toList0">48タイプをぜんぶ見る</button>
+
+    <div class="panel" style="margin-top:16px">
+      <h2>みんなの結果</h2>
+      <ul class="board" id="board"><li class="empty">読み込み中…</li></ul>
+      <p class="note">ニックネームを入れて占った人だけが並びます。生まれた日は表示されません。
+        不適切な名前は予告なく削除します。</p>
+    </div>
   </section>
 
   <!-- ===== 入力 ===== -->
@@ -208,6 +244,15 @@
         <button type="button" data-t="-1">?</button>
       </div>
       <p class="note">「?」は血液型がわからない場合に選んでください。その場合は12タイプでの結果になります。生まれた年は聞きません。</p>
+
+      <div id="nickWrap" style="margin-top:18px">
+        <label class="fld" for="nick">ニックネーム(任意・12文字まで)</label>
+        <input type="text" id="nick" maxlength="12" placeholder="入れるとトップの一覧に載ります" />
+        <p class="warn" id="nickWarn"></p>
+        <p class="note">本名・学校名・電話番号など、あなたや他人が特定できるものは入れないでください。
+          空欄のままでも占えます。</p>
+      </div>
+
       <div style="margin-top:18px"><button class="btn" id="go">占う</button></div>
     </div>
   </section>
@@ -250,9 +295,8 @@
     </div>
 
     <div class="panel">
-      <h2>今日は何の日</h2>
-      <p style="font-size:15.5px;font-weight:800;margin:0 0 6px" id="rDayT"></p>
-      <p style="font-size:14px;margin:0;color:#e6dffb" id="rDayD"></p>
+      <h2>気質について</h2>
+      <div id="rTempers"></div>
     </div>
 
     <div class="panel">
@@ -272,6 +316,12 @@
       <p class="note" id="rPplNote"></p>
     </div>
 
+    <div class="panel">
+      <h2>今日は何の日</h2>
+      <p style="font-size:15.5px;font-weight:800;margin:0 0 6px" id="rDayT"></p>
+      <p style="font-size:14px;margin:0;color:#e6dffb" id="rDayD"></p>
+    </div>
+
     <button class="btn sub" id="again">別の人を占う</button>
     <div style="height:9px"></div>
     <button class="btn sub" id="toList2">48タイプをぜんぶ見る</button>
@@ -286,6 +336,10 @@
       <p class="note" style="margin:0 0 16px">12の属性 × 4の気質で48タイプ。属性は生まれた月日、気質は血液型で決まります。</p>
       <div class="grid" id="listGrid"></div>
     </div>
+    <div class="panel">
+      <h2>気質について</h2>
+      <div id="listTempers"></div>
+    </div>
     <button class="btn sub" id="backFromList">もどる</button>
   </section>
 
@@ -298,14 +352,14 @@
   </footer>
 </div>
 
-<script src="data-types.js?v=3"></script>
-<script src="data-total.js?v=3"></script>
-<script src="data-work.js?v=3"></script>
-<script src="data-money.js?v=3"></script>
-<script src="data-friend.js?v=3"></script>
-<script src="data-love.js?v=3"></script>
-<script src="data-calendar.js?v=3"></script>
-<script src="data-people.js?v=3"></script>
+<script src="data-types.js?v=4"></script>
+<script src="data-total.js?v=4"></script>
+<script src="data-work.js?v=4"></script>
+<script src="data-money.js?v=4"></script>
+<script src="data-friend.js?v=4"></script>
+<script src="data-love.js?v=4"></script>
+<script src="data-calendar.js?v=4"></script>
+<script src="data-people.js?v=4"></script>
 <script>
 (function(){
   "use strict";
@@ -465,12 +519,12 @@
     const cands = PEOPLE.filter(p => ga.indexOf(attrFromDate(p.m, p.d)) >= 0);
     const chosen = [];
     const used = {};
-    for(let k=0; k<3 && cands.length; k++){
+    for(let k=0; k<1 && cands.length; k++){
       let n = 0, c;
       do{ c = pick(cands, rp); n++; }while(used[c.name] && n < 40);
       if(!used[c.name]){ used[c.name] = 1; chosen.push(c); }
     }
-    const same = PEOPLE.filter(p => p.m === profile.m && p.d === profile.d);
+    const same = PEOPLE.filter(p => p.m === profile.m && p.d === profile.d).slice(0, 3);
 
     return { attr, temper, level, items, color, item, dayT, dayD, good, spark, people: chosen, same };
   }
@@ -484,6 +538,7 @@
     /* ホームボタンはトップ以外の全画面で出す */
     $("homeBtn").classList.toggle("on", id !== "screen-top");
     currentScreen = id;
+    if(id === "screen-top") loadBoard();
     window.scrollTo(0, 0);
   }
 
@@ -595,6 +650,9 @@
     }
     $("rPplNote").textContent = "収録しているのは、生年月日が定説として定まっている物故者のみです。";
 
+    /* 4つの気質の説明(トグル) */
+    $("rTempers").innerHTML = temperTogglesHtml(res.temper);
+
     $("rStat").textContent = "";
     if(mode === "self") loadStat(res);
   }
@@ -616,13 +674,79 @@
       }
     }catch(e){ /* 表示しないだけ */ }
   }
-  async function sendType(res){
-    if(localStorage.getItem("pf_sent") === `${res.attr}-${res.temper}`) return;
+  async function sendType(res, nickname){
+    const key = `${res.attr}-${res.temper}-${nickname || ""}`;
+    if(localStorage.getItem("pf_sent") === key) return;
     const s = getSupa(); if(!s) return;
     try{
-      await s.from(TABLE).insert({ attr: res.attr, temper: res.temper < 0 ? null : res.temper });
-      localStorage.setItem("pf_sent", `${res.attr}-${res.temper}`);
+      await s.from(TABLE).insert({
+        attr: res.attr,
+        temper: res.temper < 0 ? null : res.temper,
+        nickname: nickname || null
+      });
+      localStorage.setItem("pf_sent", key);
     }catch(e){ /* 送れなくても占いは動く */ }
+  }
+
+  /* ===== ニックネーム =====
+     公開される文字列なので、送る前にここで弾く。
+     完全な検閲はできないため、一覧には「不適切な名前は削除する」と明記している。 */
+  const NG_WORDS = [
+    "しね","死ね","ころす","殺す","きもい","キモイ","うざい","ウザイ","ばか","バカ","馬鹿",
+    "あほ","アホ","くず","クズ","ブス","ぶす","デブ","でぶ","ハゲ","はげ","カス","かす",
+    "きちがい","キチガイ","うんこ","ウンコ","ちんこ","まんこ","セックス","エロ","レイプ",
+    "fuck","shit","bitch","kill","die","sex","porn"
+  ];
+  function checkNick(raw){
+    const s = [...(raw || "")].filter(c => { const n = c.charCodeAt(0); return n > 31 && n !== 127; }).join("").trim();
+    if(!s) return { ok: true, value: null };
+    if([...s].length > 12) return { ok: false, msg: "12文字までにしてください。" };
+    if(/https?:|www\.|\.com|\.net|\.jp\b|@/i.test(s))
+      return { ok: false, msg: "URL やメールアドレスは入れられません。" };
+    if(/\d{6,}/.test(s))
+      return { ok: false, msg: "電話番号のような数字の並びは入れられません。" };
+    const low = s.toLowerCase();
+    if(NG_WORDS.some(w => low.includes(w.toLowerCase())))
+      return { ok: false, msg: "その言葉は使えません。別の名前にしてください。" };
+    return { ok: true, value: s };
+  }
+
+  /* ===== みんなの結果(トップ) ===== */
+  async function loadBoard(){
+    const el = $("board");
+    const s = getSupa();
+    if(!s){ el.innerHTML = `<li class="empty">読み込めませんでした。</li>`; return; }
+    try{
+      const { data, error } = await s.from(TABLE)
+        .select("nickname, attr, temper")
+        .not("nickname", "is", null)
+        .order("created_at", { ascending: false })
+        .limit(20);
+      if(error || !data || !data.length){
+        el.innerHTML = `<li class="empty">まだ誰もいません。最初の1人になってください。</li>`;
+        return;
+      }
+      el.innerHTML = data.map(r => {
+        const t = (r.temper == null) ? -1 : r.temper;
+        return `<li>${symSvg(r.attr, 20)}<span class="who">${esc(r.nickname)}</span>
+          <span class="ty">${typeName(r.attr, t)}</span></li>`;
+      }).join("");
+    }catch(e){
+      el.innerHTML = `<li class="empty">読み込めませんでした。</li>`;
+    }
+  }
+  function esc(s){
+    return String(s).replace(/[&<>"']/g, c =>
+      ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
+  }
+
+  /* 4気質の説明トグル。mine を渡すとその気質だけ最初から開く */
+  function temperTogglesHtml(mine){
+    return TEMPERS.map((t, i) => `
+      <details class="tog"${i === mine ? " open" : ""}>
+        <summary>${t.name}の気質(${t.blood})とは？</summary>
+        <div class="in"><span class="cc">${t.catch}</span>${t.body}</div>
+      </details>`).join("");
   }
 
   /* 48タイプ一覧 */
@@ -633,6 +757,7 @@
         <div class="rg">${rangeText(a)}</div>
         <div class="vs">${TEMPERS.map(t => `・${t.name}の気質(${t.blood})`).join("<br>")}</div>
       </div>`).join("");
+    $("listTempers").innerHTML = temperTogglesHtml(-1);
   })();
 
   /* ===================== 遷移 ===================== */
@@ -640,7 +765,7 @@
   function startFortune(profile, animate){
     const res = calc(profile);
     current = res;
-    if(mode === "self") sendType(res);
+    if(mode === "self") sendType(res, profile.n || null);
     if(animate){
       show("screen-draw");
       cancelDraw = runDraw(res, () => { render(res, profile); show("screen-result"); });
@@ -653,9 +778,21 @@
   $("go").addEventListener("click", () => {
     const profile = { m: +$("selM").value, d: +$("selD").value, t: sel.t };
     if(profile.t == null) return;
-    if(mode === "self") localStorage.setItem("pf_self", JSON.stringify(profile));
+    if(mode === "self"){
+      const chk = checkNick($("nick").value);
+      if(!chk.ok){
+        $("nickWarn").textContent = chk.msg;
+        $("nickWarn").classList.add("on");
+        $("nick").focus();
+        return;
+      }
+      $("nickWarn").classList.remove("on");
+      profile.n = chk.value;
+      localStorage.setItem("pf_self", JSON.stringify(profile));
+    }
     startFortune(profile, true);
   });
+  $("nick").addEventListener("input", () => $("nickWarn").classList.remove("on"));
   $("skip").addEventListener("click", () => {
     if(cancelDraw) cancelDraw();
     document.querySelectorAll("#deck .tcard").forEach(c => c.classList.add("flip"));
@@ -668,6 +805,20 @@
   function openInput(m){
     mode = m;
     $("inputTitle").textContent = m === "guest" ? "占いたい人のうまれた日" : "うまれた日をおしえて";
+    /* ニックネームは自分の分だけ。他人を占う時は出さない */
+    $("nickWrap").style.display = m === "guest" ? "none" : "";
+    $("nickWarn").classList.remove("on");
+    if(m === "self"){
+      const saved = readSelf();
+      if(saved){
+        $("selM").value = saved.m;
+        $("selM").dispatchEvent(new Event("change"));
+        $("selD").value = saved.d;
+        $("nick").value = saved.n || "";
+        const b = document.querySelector(`#blood button[data-t="${saved.t}"]`);
+        if(b) b.click();
+      }
+    }
     show("screen-input");
   }
   $("again").addEventListener("click", () => openInput("guest"));
