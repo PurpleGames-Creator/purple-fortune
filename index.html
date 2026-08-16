@@ -313,7 +313,6 @@
         <h2 style="margin-top:22px">あなたと同じ誕生日</h2>
         <ul class="ppl" id="rSame"></ul>
       </div>
-      <p class="note" id="rPplNote"></p>
     </div>
 
     <div class="panel">
@@ -354,14 +353,14 @@
   </footer>
 </div>
 
-<script src="data-types.js?v=13"></script>
-<script src="data-total.js?v=13"></script>
-<script src="data-work.js?v=13"></script>
-<script src="data-money.js?v=13"></script>
-<script src="data-friend.js?v=13"></script>
-<script src="data-love.js?v=13"></script>
-<script src="data-calendar.js?v=13"></script>
-<script src="data-people.js?v=13"></script>
+<script src="data-types.js?v=14"></script>
+<script src="data-total.js?v=14"></script>
+<script src="data-work.js?v=14"></script>
+<script src="data-money.js?v=14"></script>
+<script src="data-friend.js?v=14"></script>
+<script src="data-love.js?v=14"></script>
+<script src="data-calendar.js?v=14"></script>
+<script src="data-people.js?v=14"></script>
 <script>
 (function(){
   "use strict";
@@ -690,10 +689,6 @@
     }else{
       $("rSameWrap").style.display = "none";
     }
-    $("rPplNote").textContent = res.same.length
-      ? "前世は同じ星座の物故者から選んでいます。同じ誕生日には生年月日が公表されている存命の方も含みます。"
-      : "前世は同じ星座の物故者から選んでいます。";
-
     $("rStat").textContent = "";
     if(mode === "self") loadStat(res);
   }
