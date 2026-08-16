@@ -258,14 +258,14 @@
   </footer>
 </div>
 
-<script src="data-types.js?v=1"></script>
-<script src="data-total.js?v=1"></script>
-<script src="data-work.js?v=1"></script>
-<script src="data-money.js?v=1"></script>
-<script src="data-friend.js?v=1"></script>
-<script src="data-love.js?v=1"></script>
-<script src="data-calendar.js?v=1"></script>
-<script src="data-people.js?v=1"></script>
+<script src="data-types.js?v=2"></script>
+<script src="data-total.js?v=2"></script>
+<script src="data-work.js?v=2"></script>
+<script src="data-money.js?v=2"></script>
+<script src="data-friend.js?v=2"></script>
+<script src="data-love.js?v=2"></script>
+<script src="data-calendar.js?v=2"></script>
+<script src="data-people.js?v=2"></script>
 <script>
 (function(){
   "use strict";
@@ -314,8 +314,8 @@
   const jd = n => n < 10 ? "0"+n : ""+n;
   const rangeText = a => `${a.from[0]}月${a.from[1]}日〜${a.to[0]}月${a.to[1]}日生まれ`;
   const typeName = (attr, temper) =>
-    temper < 0 ? `${ATTRS[attr].name}のパプ太郎`
-               : `${ATTRS[attr].name}のパプ太郎・${TEMPERS[temper].name}の気質`;
+    temper < 0 ? `${ATTRS[attr].name}属性`
+               : `${ATTRS[attr].name}属性・${TEMPERS[temper].name}の気質`;
 
   /* ===================== 属性シンボル(SVG) ===================== */
   const SYM = [
@@ -473,7 +473,7 @@
     const backs = [
       { lbl:"あなたの本質", val: typeName(res.attr, res.temper), sym: true },
       { lbl:"今日の運勢", val: res.level.name, sym: false },
-      { lbl:"相性", val: ATTRS[res.good[0].attr].name + "のパプ太郎", sym: false }
+      { lbl:"相性", val: ATTRS[res.good[0].attr].name + "属性", sym: false }
     ];
     cards.forEach((c, i) => {
       c.classList.remove("flip");
@@ -506,7 +506,7 @@
       ? a.body
       : a.body + "\n\n" + TEMPERS[res.temper].body;
     $("rBody").style.whiteSpace = "pre-line";
-    $("rShare").textContent = `${a.name}属性(${rangeText(a)})`;
+    $("rShare").textContent = rangeText(a);
 
     const now = new Date();
     $("rDate").textContent = `${now.getMonth()+1}/${now.getDate()}`;
@@ -524,8 +524,8 @@
     const mk = (o, cls) => {
       const at = ATTRS[o.attr];
       const nm = o.temper < 0
-        ? `${at.name}のパプ太郎`
-        : `${at.name}のパプ太郎・${TEMPERS[o.temper].name}の気質(${TEMPERS[o.temper].blood})`;
+        ? `${at.name}属性`
+        : `${at.name}属性・${TEMPERS[o.temper].name}の気質(${TEMPERS[o.temper].blood})`;
       return `<div class="match ${cls}"><p class="nm">${nm}</p><span class="rg">${rangeText(at)}</span></div>`;
     };
     $("rGood").innerHTML = res.good.map(o => mk(o, "")).join("");
@@ -578,7 +578,7 @@
   (function buildList(){
     $("listGrid").innerHTML = ATTRS.map((a, i) => `
       <div class="gcard">
-        <div class="hd">${symSvg(i, 22)}<span class="nm">${a.name}のパプ太郎</span></div>
+        <div class="hd">${symSvg(i, 22)}<span class="nm">${a.name}属性</span></div>
         <div class="rg">${rangeText(a)}</div>
         <div class="vs">${TEMPERS.map(t => `・${t.name}の気質(${t.blood})`).join("<br>")}</div>
       </div>`).join("");
