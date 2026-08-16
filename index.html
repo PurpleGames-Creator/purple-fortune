@@ -352,14 +352,14 @@
   </footer>
 </div>
 
-<script src="data-types.js?v=4"></script>
-<script src="data-total.js?v=4"></script>
-<script src="data-work.js?v=4"></script>
-<script src="data-money.js?v=4"></script>
-<script src="data-friend.js?v=4"></script>
-<script src="data-love.js?v=4"></script>
-<script src="data-calendar.js?v=4"></script>
-<script src="data-people.js?v=4"></script>
+<script src="data-types.js?v=5"></script>
+<script src="data-total.js?v=5"></script>
+<script src="data-work.js?v=5"></script>
+<script src="data-money.js?v=5"></script>
+<script src="data-friend.js?v=5"></script>
+<script src="data-love.js?v=5"></script>
+<script src="data-calendar.js?v=5"></script>
+<script src="data-people.js?v=5"></script>
 <script>
 (function(){
   "use strict";
@@ -516,7 +516,8 @@
 
     /* 歴史上の人物(本質なので日替わりにしない) */
     const rp = rngFrom(`${base}:people`);
-    const cands = PEOPLE.filter(p => ga.indexOf(attrFromDate(p.m, p.d)) >= 0);
+    /* 相性の候補は物故者のみ。存命の人は「同じ誕生日」にだけ出す */
+    const cands = PEOPLE.filter(p => !p.living && ga.indexOf(attrFromDate(p.m, p.d)) >= 0);
     const chosen = [];
     const used = {};
     for(let k=0; k<1 && cands.length; k++){
@@ -648,7 +649,9 @@
     }else{
       $("rSameWrap").style.display = "none";
     }
-    $("rPplNote").textContent = "収録しているのは、生年月日が定説として定まっている物故者のみです。";
+    $("rPplNote").textContent = res.same.length
+      ? "相性の人物は物故者のみ。同じ誕生日には生年月日が公表されている存命の方も含みます。"
+      : "収録しているのは、生年月日がはっきり分かっている人物だけです。";
 
     /* 4つの気質の説明(トグル) */
     $("rTempers").innerHTML = temperTogglesHtml(res.temper);
