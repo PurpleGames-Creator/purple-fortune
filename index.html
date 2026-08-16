@@ -354,14 +354,14 @@
   </footer>
 </div>
 
-<script src="data-types.js?v=12"></script>
-<script src="data-total.js?v=12"></script>
-<script src="data-work.js?v=12"></script>
-<script src="data-money.js?v=12"></script>
-<script src="data-friend.js?v=12"></script>
-<script src="data-love.js?v=12"></script>
-<script src="data-calendar.js?v=12"></script>
-<script src="data-people.js?v=12"></script>
+<script src="data-types.js?v=13"></script>
+<script src="data-total.js?v=13"></script>
+<script src="data-work.js?v=13"></script>
+<script src="data-money.js?v=13"></script>
+<script src="data-friend.js?v=13"></script>
+<script src="data-love.js?v=13"></script>
+<script src="data-calendar.js?v=13"></script>
+<script src="data-people.js?v=13"></script>
 <script>
 (function(){
   "use strict";
@@ -394,6 +394,17 @@
     };
   }
   const pick = (arr, r) => arr[Math.floor(r() * arr.length) % arr.length];
+
+  /* 知名度の重み。有名な人ほど前世に選ばれやすくする。
+     3 = 手で選んだ人(誰でも知っている) / 2 = 名前を聞けば分かる / 1 = 専門的 */
+  const FAME_WEIGHT = { 3: 8, 2: 3, 1: 1 };
+  const fameOf = p => FAME_WEIGHT[p.fame] || 1;
+  function pickWeighted(arr, r){
+    const total = arr.reduce((s, x) => s + fameOf(x), 0);
+    let t = r() * total;
+    for(const x of arr){ t -= fameOf(x); if(t <= 0) return x; }
+    return arr[arr.length - 1];
+  }
 
   /* ===================== 属性の判定 ===================== */
   function signFromDate(m, d){
@@ -507,13 +518,17 @@
     /* 今日は誰の誕生日 */
     const now = new Date();
     const tm = now.getMonth() + 1, td = now.getDate();
-    const born = PEOPLE.filter(p => p.m === tm && p.d === td);
-    /* 4人より多い日は日付を種にして回す(その日のうちは変わらない) */
+    /* 知名度順に並べたうえで上位から出す。同順位の中は日付を種にして回す */
+    const born = PEOPLE.filter(p => p.m === tm && p.d === td)
+      .sort((a, b) => (b.fame || 1) - (a.fame || 1));
     let todayPeople = born;
     if(born.length > 4){
+      const top = born.filter(p => p.fame === 3);
+      const rest = born.filter(p => p.fame !== 3);
       const rb = rngFrom(`born:${day}`);
-      const off = Math.floor(rb() * born.length);
-      todayPeople = born.slice(off).concat(born.slice(0, off)).slice(0, 4);
+      /* 有名な人は必ず入れ、残り枠だけ日替わりで回す */
+      const spin = a => a.length ? (o => a.slice(o).concat(a.slice(0, o)))(Math.floor(rb() * a.length)) : a;
+      todayPeople = spin(top).concat(spin(rest)).slice(0, 4);
     }
     /* 固有の記念日がある日だけ一行添える(季節の埋め草は出さない) */
     const ev = DAY_EVENTS[`${tm}-${td}`];
@@ -531,8 +546,10 @@
        種は誕生月日+血液型なので、同じ星座でも生まれた日が違えば別の人になる。 */
     const rp = rngFrom(`${base}:people`);
     const cands = PEOPLE.filter(p => !p.living && signFromDate(p.m, p.d) === attr);
-    const chosen = cands.length ? [pick(cands, rp)] : [];
-    const same = PEOPLE.filter(p => p.m === profile.m && p.d === profile.d).slice(0, 3);
+    const chosen = cands.length ? [pickWeighted(cands, rp)] : [];
+    /* 同じ誕生日も知名度順にして、有名な人から並べる */
+    const same = PEOPLE.filter(p => p.m === profile.m && p.d === profile.d)
+      .sort((a, b) => (b.fame || 1) - (a.fame || 1)).slice(0, 3);
 
     return { attr, temper, level, items, color, item, good, spark, people: chosen, same,
              todayPeople, dayNote, isMyBirthday, todayLabel: `${tm}月${td}日` };
