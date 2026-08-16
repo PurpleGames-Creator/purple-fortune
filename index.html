@@ -335,6 +335,11 @@
     <button class="btn sub" id="toList2">48タイプをぜんぶ見る</button>
     <div style="height:9px"></div>
     <button class="btn sub" id="edit">自分の設定を変える</button>
+    <div style="height:9px"></div>
+    <button class="btn sub" id="reset" style="color:#e39a8f;border-color:rgba(227,154,143,.35)">
+      この端末のデータを消す</button>
+    <p class="note" style="text-align:center">誕生日・血液型・ニックネームをこの端末から消します。
+      「みんなの結果」に載った分は消えないので、消したい時は運営に伝えてください。</p>
   </section>
 
   <!-- ===== 48タイプ一覧 ===== -->
@@ -360,14 +365,14 @@
   </footer>
 </div>
 
-<script src="data-types.js?v=8"></script>
-<script src="data-total.js?v=8"></script>
-<script src="data-work.js?v=8"></script>
-<script src="data-money.js?v=8"></script>
-<script src="data-friend.js?v=8"></script>
-<script src="data-love.js?v=8"></script>
-<script src="data-calendar.js?v=8"></script>
-<script src="data-people.js?v=8"></script>
+<script src="data-types.js?v=9"></script>
+<script src="data-total.js?v=9"></script>
+<script src="data-work.js?v=9"></script>
+<script src="data-money.js?v=9"></script>
+<script src="data-friend.js?v=9"></script>
+<script src="data-love.js?v=9"></script>
+<script src="data-calendar.js?v=9"></script>
+<script src="data-people.js?v=9"></script>
 <script>
 (function(){
   "use strict";
@@ -851,6 +856,21 @@
   }
   $("again").addEventListener("click", () => openInput("guest"));
   $("edit").addEventListener("click", () => openInput("self"));
+
+  /* この端末に保存した内容を消してトップへ戻る。
+     公開済みの一覧(サーバー側)はここからは消せないので、その旨を画面に書いてある。 */
+  $("reset").addEventListener("click", () => {
+    try{
+      localStorage.removeItem("pf_self");
+      localStorage.removeItem("pf_sent");
+    }catch(e){ /* 保存できない環境では何もしない */ }
+    current = null;
+    sel = { m: 1, d: 1, t: null };
+    $("nick").value = "";
+    $("go").disabled = true;
+    document.querySelectorAll("#blood button").forEach(x => x.classList.remove("sel"));
+    goTop();
+  });
 
   function openList(){ listFrom = currentScreen; show("screen-list"); }
   $("toList0").addEventListener("click", openList);
