@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Purple Fortune｜無料の誕生日占い・48タイプ診断</title>
-  <meta name="description" content="Purple Fortune（パープルフォーチュン）は誕生日と血液型から占う無料の占い。パプ太郎が12属性×4気質の48タイプであなたの本質・今日の運勢・相性の良い人を占います。登録不要でブラウザですぐ遊べます。" />
+  <meta name="description" content="Purple Fortune（パープルフォーチュン）は誕生日と血液型から占う無料の占い。パプ太郎が12星座×4血液型の48タイプであなたの本質・今日の運勢・相性の良い人を占います。登録不要でブラウザですぐ遊べます。" />
   <link rel="canonical" href="https://purplegames-creator.github.io/purple-fortune/" />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Purple Games" />
@@ -115,7 +115,8 @@
     .symbadge{display:flex;align-items:center;justify-content:center;
       width:88px;height:88px;margin:2px auto 4px;border-radius:50%;
       background:rgba(255,255,255,.05);border:1px solid rgba(229,196,106,.35)}
-    .tname{font-size:25px;font-weight:800;margin:10px 0 4px;letter-spacing:.04em}
+    .tname{font-size:27px;font-weight:800;margin:10px 0 2px;letter-spacing:.06em}
+    .tplain{font-size:17px;font-weight:700;color:#fff;margin:0 0 8px;letter-spacing:.08em}
     .tcatch{font-size:13px;color:var(--gold);letter-spacing:.14em;margin:0 0 14px}
     .tbody{font-size:14px;text-align:left;color:#e6dffb;margin:0}
     .share{font-size:12px;color:var(--sub);margin:14px 0 0}
@@ -169,7 +170,9 @@
     .gcard svg{width:22px;height:22px;flex:none}
     .gcard .nm{font-size:15px;font-weight:800}
     .gcard .rg{font-size:10.5px;color:var(--sub);margin-bottom:7px}
-    .gcard .vs{font-size:11.5px;color:#d9cffa;line-height:1.85}
+    .gcard .vs{font-size:11.5px;color:#d9cffa;line-height:1.95}
+    .gcard .vs b{font-weight:800;color:var(--txt)}
+    .gcard .vs span{color:var(--sub);font-size:10.5px}
 
     footer{text-align:center;font-size:11px;color:#7d6ea8;line-height:1.9;margin-top:34px;
       border-top:1px solid rgba(255,255,255,.08);padding-top:18px}
@@ -284,6 +287,7 @@
       <div class="typecard">
         <div class="symbadge" id="resSym"></div>
         <p class="tname" id="rName"></p>
+        <p class="tplain" id="rPlain"></p>
         <p class="tcatch" id="rCatch"></p>
         <p class="tbody" id="rBody"></p>
         <p class="share" id="rShare"></p>
@@ -302,7 +306,7 @@
     </div>
 
     <div class="panel">
-      <h2>気質について</h2>
+      <h2>血液型について</h2>
       <div id="rTempers"></div>
     </div>
 
@@ -346,11 +350,11 @@
   <section id="screen-list" class="screen">
     <div class="panel">
       <h2>48タイプ図鑑</h2>
-      <p class="note" style="margin:0 0 16px">12の属性 × 4の気質で48タイプ。属性は生まれた月日、気質は血液型で決まります。</p>
+      <p class="note" style="margin:0 0 16px">12星座 × 4血液型で48タイプ。組み合わせごとに属性が決まります(例: 双子座 × B型 なら疾風属性)。</p>
       <div class="grid" id="listGrid"></div>
     </div>
     <div class="panel">
-      <h2>気質について</h2>
+      <h2>血液型について</h2>
       <div id="listTempers"></div>
     </div>
     <button class="btn sub" id="backFromList">もどる</button>
@@ -365,14 +369,14 @@
   </footer>
 </div>
 
-<script src="data-types.js?v=9"></script>
-<script src="data-total.js?v=9"></script>
-<script src="data-work.js?v=9"></script>
-<script src="data-money.js?v=9"></script>
-<script src="data-friend.js?v=9"></script>
-<script src="data-love.js?v=9"></script>
-<script src="data-calendar.js?v=9"></script>
-<script src="data-people.js?v=9"></script>
+<script src="data-types.js?v=10"></script>
+<script src="data-total.js?v=10"></script>
+<script src="data-work.js?v=10"></script>
+<script src="data-money.js?v=10"></script>
+<script src="data-friend.js?v=10"></script>
+<script src="data-love.js?v=10"></script>
+<script src="data-calendar.js?v=10"></script>
+<script src="data-people.js?v=10"></script>
 <script>
 (function(){
   "use strict";
@@ -407,9 +411,9 @@
   const pick = (arr, r) => arr[Math.floor(r() * arr.length) % arr.length];
 
   /* ===================== 属性の判定 ===================== */
-  function attrFromDate(m, d){
-    for(let i=0;i<ATTRS.length;i++){
-      const a = ATTRS[i], fm = a.from[0], fd = a.from[1], tm = a.to[0], td = a.to[1];
+  function signFromDate(m, d){
+    for(let i=0;i<SIGNS.length;i++){
+      const a = SIGNS[i], fm = a.from[0], fd = a.from[1], tm = a.to[0], td = a.to[1];
       if(fm <= tm){
         if((m === fm && d >= fd) || (m === tm && d <= td)) return i;
       }else{ /* 年をまたぐ(岩) */
@@ -419,10 +423,16 @@
     return 0;
   }
   const jd = n => n < 10 ? "0"+n : ""+n;
-  const rangeText = a => `${a.from[0]}月${a.from[1]}日〜${a.to[0]}月${a.to[1]}日生まれ`;
-  const typeName = (attr, temper) =>
-    temper < 0 ? `${ATTRS[attr].name}属性`
-               : `${ATTRS[attr].name}属性・${TEMPERS[temper].name}の気質`;
+  const rangeText = s => `${s.from[0]}月${s.from[1]}日〜${s.to[0]}月${s.to[1]}日生まれ`;
+  /* 属性名。血液型が分からない時は星座までしか決まらない */
+  const attrName = (sign, blood) =>
+    blood < 0 ? "" : `${SIGNS[sign].types[blood].name}属性`;
+  /* 平易な呼び方。48タイプの見出しにも一覧にも使う */
+  const plainName = (sign, blood) =>
+    blood < 0 ? SIGNS[sign].name : `${SIGNS[sign].name} × ${BLOODS[blood].name}`;
+  /* 一行で言い切る時(みんなの結果・演出カード) */
+  const typeName = (sign, blood) =>
+    blood < 0 ? SIGNS[sign].name : `${attrName(sign, blood)}(${plainName(sign, blood)})`;
 
   /* ===================== 属性シンボル(SVG) ===================== */
   const SYM = [
@@ -440,7 +450,7 @@
     {p:"M2.4 9.4c3.2-3.2 5.4 3.2 8.6 0s5.4 3.2 8.6 0M2.4 14.4c3.2-3.2 5.4 3.2 8.6 0s5.4 3.2 8.6 0M2.4 19.4c3.2-3.2 5.4 3.2 8.6 0s5.4 3.2 8.6 0",s:1}
   ];
   function symSvg(attr, size){
-    const s = SYM[attr], c = ATTRS[attr].color;
+    const s = SYM[attr], c = SIGNS[attr].color;
     let style;
     if(s.fill2){        /* 塗りと縁を個別指定(闇の黒丸など) */
       style = `fill="${s.fill2}" stroke="${s.stroke2}" stroke-width="1.5"`;
@@ -454,7 +464,7 @@
 
   /* ===== パプ太郎(占い師姿: 背後のマント + ターバン) ===== */
   function charHtml(attr){
-    const c = attr == null ? "#a97bff" : ATTRS[attr].color;
+    const c = attr == null ? "#a97bff" : SIGNS[attr].color;
     return `
       <svg viewBox="0 0 489 496" aria-hidden="true">
         <ellipse class="aura" cx="244" cy="300" rx="205" ry="185" fill="${c}"/>
@@ -475,7 +485,7 @@
     return `${t.getFullYear()}${jd(t.getMonth()+1)}${jd(t.getDate())}`;
   }
   function calc(profile){
-    const attr = attrFromDate(profile.m, profile.d);
+    const attr = signFromDate(profile.m, profile.d);
     const temper = profile.t;
     const base = `${jd(profile.m)}${jd(profile.d)}-${temper}`;
     const day = todayKey();
@@ -526,15 +536,15 @@
     const isMyBirthday = (profile.m === tm && profile.d === td);
 
     /* 相性 */
-    const ga = goodAttrs(attr), sa = sparkAttr(attr);
-    const gt = temper < 0 ? null : TEMPER_GOOD[temper];
+    const ga = goodSigns(attr), sa = sparkSign(attr);
+    const gt = temper < 0 ? null : BLOOD_GOOD[temper];
     const good = ga.map((a, i) => ({ attr: a, temper: gt ? gt[i] : -1 }));
-    const spark = { attr: sa, temper: temper < 0 ? -1 : TEMPER_SPARK[temper] };
+    const spark = { attr: sa, temper: temper < 0 ? -1 : BLOOD_SPARK[temper] };
 
     /* 歴史上の人物(本質なので日替わりにしない) */
     const rp = rngFrom(`${base}:people`);
     /* 相性の候補は物故者のみ。存命の人は「同じ誕生日」にだけ出す */
-    const cands = PEOPLE.filter(p => !p.living && ga.indexOf(attrFromDate(p.m, p.d)) >= 0);
+    const cands = PEOPLE.filter(p => !p.living && ga.indexOf(signFromDate(p.m, p.d)) >= 0);
     const chosen = [];
     const used = {};
     for(let k=0; k<1 && cands.length; k++){
@@ -596,9 +606,10 @@
     $("drawChar").innerHTML = charHtml(res.attr);
     const cards = document.querySelectorAll("#deck .tcard");
     const backs = [
-      { lbl:"あなたの本質", val: typeName(res.attr, res.temper), sym: true },
+      { lbl:"あなたの本質",
+        val: res.temper < 0 ? SIGNS[res.attr].name : attrName(res.attr, res.temper), sym: true },
       { lbl:"今日の運勢", val: res.level.name, sym: false },
-      { lbl:"相性", val: ATTRS[res.good[0].attr].name + "属性", sym: false }
+      { lbl:"相性", val: plainName(res.good[0].attr, res.good[0].temper), sym: false }
     ];
     cards.forEach((c, i) => {
       c.classList.remove("flip");
@@ -621,15 +632,17 @@
 
   /* 結果の描画 */
   function render(res, profile){
-    const a = ATTRS[res.attr];
+    const a = SIGNS[res.attr];
     $("resSym").innerHTML = symSvg(res.attr, 52);
-    $("rName").textContent = typeName(res.attr, res.temper);
+    /* 見出しは属性名、その下に「双子座 × B型」を大きめに出す */
+    $("rName").textContent = res.temper < 0 ? a.name : attrName(res.attr, res.temper);
+    $("rPlain").textContent = plainName(res.attr, res.temper);
     $("rCatch").textContent = res.temper < 0
-      ? a.catch
-      : `${a.catch} × ${TEMPERS[res.temper].catch}`;
+      ? "血液型を選ぶと48タイプの属性が出ます"
+      : a.types[res.temper].catch;
     $("rBody").textContent = res.temper < 0
       ? a.body
-      : a.body + "\n\n" + TEMPERS[res.temper].body;
+      : a.body + "\n\n" + BLOODS[res.temper].body;
     $("rBody").style.whiteSpace = "pre-line";
     $("rShare").textContent = rangeText(a);
 
@@ -658,11 +671,11 @@
     $("rDayNote").textContent = res.dayNote;
 
     const mk = (o, cls) => {
-      const at = ATTRS[o.attr];
-      const nm = o.temper < 0
-        ? `${at.name}属性`
-        : `${at.name}属性・${TEMPERS[o.temper].name}の気質(${TEMPERS[o.temper].blood})`;
-      return `<div class="match ${cls}"><p class="nm">${nm}</p><span class="rg">${rangeText(at)}</span></div>`;
+      const at = SIGNS[o.attr];
+      const sub = o.temper < 0 ? rangeText(at)
+                               : `${attrName(o.attr, o.temper)} ・ ${rangeText(at)}`;
+      return `<div class="match ${cls}"><p class="nm">${plainName(o.attr, o.temper)}</p>` +
+             `<span class="rg">${sub}</span></div>`;
     };
     $("rGood").innerHTML = res.good.map(o => mk(o, "")).join("");
     $("rSpark").innerHTML = mk(res.spark, "spark");
@@ -773,22 +786,23 @@
       ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
   }
 
-  /* 4気質の説明トグル。mine を渡すとその気質だけ最初から開く */
+  /* 血液型の説明トグル。mine を渡すとその血液型だけ最初から開く */
   function temperTogglesHtml(mine){
-    return TEMPERS.map((t, i) => `
+    return BLOODS.map((b, i) => `
       <details class="tog"${i === mine ? " open" : ""}>
-        <summary>${t.name}の気質(${t.blood})とは？</summary>
-        <div class="in"><span class="cc">${t.catch}</span>${t.body}</div>
+        <summary>${b.name}とは？</summary>
+        <div class="in">${b.body}</div>
       </details>`).join("");
   }
 
-  /* 48タイプ一覧 */
+  /* 48タイプ一覧。星座ごとに 4 つの属性を並べる */
   (function buildList(){
-    $("listGrid").innerHTML = ATTRS.map((a, i) => `
+    $("listGrid").innerHTML = SIGNS.map((s, i) => `
       <div class="gcard">
-        <div class="hd">${symSvg(i, 22)}<span class="nm">${a.name}属性</span></div>
-        <div class="rg">${rangeText(a)}</div>
-        <div class="vs">${TEMPERS.map(t => `・${t.name}の気質(${t.blood})`).join("<br>")}</div>
+        <div class="hd">${symSvg(i, 22)}<span class="nm">${s.name}</span></div>
+        <div class="rg">${rangeText(s)}</div>
+        <div class="vs">${s.types.map((t, j) =>
+          `<b>${t.name}属性</b> <span>${BLOODS[j].name}</span>`).join("<br>")}</div>
       </div>`).join("");
     $("listTempers").innerHTML = temperTogglesHtml(-1);
   })();
