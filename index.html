@@ -63,6 +63,28 @@
     .btn.sub{background:transparent;border:1px solid var(--line);color:var(--sub);
       box-shadow:none;font-size:14px;padding:13px;font-weight:600}
 
+    /* --- ホームボタン(トップ以外の全画面に常時表示) --- */
+    .homebtn{position:fixed;z-index:50;
+      top:calc(env(safe-area-inset-top) + 12px);
+      left:max(12px, calc(50% - 280px + 16px));
+      width:44px;height:44px;border-radius:50%;padding:0;
+      display:none;align-items:center;justify-content:center;
+      background:rgba(37,21,69,.92);border:1px solid var(--line);
+      color:var(--sub);cursor:pointer;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+      box-shadow:0 4px 16px rgba(0,0,0,.35)}
+    .homebtn.on{display:flex}
+    .homebtn:active{background:var(--accent);color:#150a30}
+    .homebtn svg{width:21px;height:21px}
+
+    /* --- トップ画面 --- */
+    .lead{font-size:14.5px;color:#e6dffb;text-align:center;margin:2px 0 22px;line-height:2}
+    .topcard{text-align:center;border:1.5px solid var(--gold);border-radius:20px;padding:26px 18px 22px;
+      background:linear-gradient(170deg,rgba(60,36,110,.9),rgba(26,14,58,.9));position:relative;overflow:hidden;
+      margin-bottom:16px}
+    .topcard::before{content:"";position:absolute;inset:7px;border:1px solid rgba(229,196,106,.3);
+      border-radius:14px;pointer-events:none}
+    .topcard .paputaro{width:190px}
+
     /* --- キャラクター --- */
     .paputaro{position:relative;width:170px;margin:0 auto 6px}
     .paputaro img{display:block;width:100%;position:relative;z-index:1}
@@ -138,11 +160,30 @@
   </style>
 </head>
 <body>
+<button class="homebtn" id="homeBtn" type="button" aria-label="トップに戻る">
+  <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor"
+       stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 11.2 12 3l9 8.2"/>
+    <path d="M5.4 10.2v9.4h4.3v-5.3h4.6v5.3h4.3v-9.4"/>
+  </svg>
+</button>
+
 <div class="wrap">
   <header class="top">
     <p class="brand">PURPLE GAMES</p>
     <h1>Purple Fortune<span class="sm">パプ太郎の占い館</span></h1>
   </header>
+
+  <!-- ===== トップ ===== -->
+  <section id="screen-top" class="screen">
+    <div class="topcard">
+      <div class="paputaro" id="topChar"></div>
+      <p class="lead">生まれた日と血液型で、48タイプ。<br />
+        あなたの本質と今日の運勢、<br />相性の良い人を占います。</p>
+      <button class="btn" id="start">はじめる</button>
+    </div>
+    <button class="btn sub" id="toList0">48タイプをぜんぶ見る</button>
+  </section>
 
   <!-- ===== 入力 ===== -->
   <section id="screen-input" class="screen">
@@ -169,7 +210,6 @@
       <p class="note">「?」は血液型がわからない場合に選んでください。その場合は12タイプでの結果になります。生まれた年は聞きません。</p>
       <div style="margin-top:18px"><button class="btn" id="go">占う</button></div>
     </div>
-    <button class="btn sub" id="toList">48タイプをぜんぶ見る</button>
   </section>
 
   <!-- ===== 演出 ===== -->
@@ -258,14 +298,14 @@
   </footer>
 </div>
 
-<script src="data-types.js?v=2"></script>
-<script src="data-total.js?v=2"></script>
-<script src="data-work.js?v=2"></script>
-<script src="data-money.js?v=2"></script>
-<script src="data-friend.js?v=2"></script>
-<script src="data-love.js?v=2"></script>
-<script src="data-calendar.js?v=2"></script>
-<script src="data-people.js?v=2"></script>
+<script src="data-types.js?v=3"></script>
+<script src="data-total.js?v=3"></script>
+<script src="data-work.js?v=3"></script>
+<script src="data-money.js?v=3"></script>
+<script src="data-friend.js?v=3"></script>
+<script src="data-love.js?v=3"></script>
+<script src="data-calendar.js?v=3"></script>
+<script src="data-people.js?v=3"></script>
 <script>
 (function(){
   "use strict";
@@ -326,7 +366,7 @@
     {p:"M12 7.6a4.4 4.4 0 100 8.8 4.4 4.4 0 000-8.8zM12 1.4v3.2M12 19.4v3.2M2.6 12h3.2M18.2 12h3.2M5.3 5.3l2.3 2.3M16.4 16.4l2.3 2.3M18.7 5.3l-2.3 2.3M7.6 16.4l-2.3 2.3",s:1},
     {p:"M12 1.8l4.9 7.1h-2.7l4.2 6.1h-3.5l2.9 4.4H6.2l2.9-4.4H5.6l4.2-6.1H7.1zM10.9 19.4h2.2v2.8h-2.2z"},
     {p:"M7.4 18.6a4.3 4.3 0 01-.4-8.6 5.4 5.4 0 0110.2-1.5 3.7 3.7 0 01-.6 10.1z"},
-    {p:"M15.4 2.4A9.6 9.6 0 1015.4 21.6 7.6 7.6 0 0115.4 2.4z"},
+    {p:"M12 2.6a9.4 9.4 0 100 18.8 9.4 9.4 0 000-18.8z", fill2:"#07060c", stroke2:"#c9bdf0"},
     {p:"M13.6 1.6L4.2 14.2h5.9L8.8 22.4l9.5-12.8h-6z"},
     {p:"M3.4 19.4l4.4-9.6 3.8 3.1 3.1-6.3 5.9 12.8z"},
     {p:"M12 1.8v20.4M3.6 6.6l16.8 10.8M20.4 6.6L3.6 17.4M12 6.4l3-2.6M12 6.4l-3-2.6M12 17.6l3 2.6M12 17.6l-3 2.6",s:1},
@@ -334,8 +374,14 @@
   ];
   function symSvg(attr, size){
     const s = SYM[attr], c = ATTRS[attr].color;
-    const style = s.s ? `fill="none" stroke="${c}" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"`
-                      : `fill="${c}"`;
+    let style;
+    if(s.fill2){        /* 塗りと縁を個別指定(闇の黒丸など) */
+      style = `fill="${s.fill2}" stroke="${s.stroke2}" stroke-width="1.5"`;
+    }else if(s.s){      /* 線画 */
+      style = `fill="none" stroke="${c}" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"`;
+    }else{              /* 塗り */
+      style = `fill="${c}"`;
+    }
     return `<svg viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true"><path d="${s.p}" ${style}/></svg>`;
   }
 
@@ -431,15 +477,20 @@
 
   /* ===================== 画面 ===================== */
   const $ = id => document.getElementById(id);
-  const screens = ["screen-input","screen-draw","screen-result","screen-list"];
+  const screens = ["screen-top","screen-input","screen-draw","screen-result","screen-list"];
+  let currentScreen = "screen-top";
   function show(id){
     screens.forEach(s => $(s).classList.toggle("on", s === id));
+    /* ホームボタンはトップ以外の全画面で出す */
+    $("homeBtn").classList.toggle("on", id !== "screen-top");
+    currentScreen = id;
     window.scrollTo(0, 0);
   }
 
   let sel = { m: 1, d: 1, t: null };
   let mode = "self";       /* self | guest */
   let current = null;
+  let listFrom = "screen-top";   /* 図鑑を開く直前の画面 */
 
   /* 入力欄の初期化 */
   (function initSelects(){
@@ -621,22 +672,36 @@
   }
   $("again").addEventListener("click", () => openInput("guest"));
   $("edit").addEventListener("click", () => openInput("self"));
-  $("toList").addEventListener("click", () => show("screen-list"));
-  $("toList2").addEventListener("click", () => show("screen-list"));
-  $("backFromList").addEventListener("click", () => {
-    show(current ? "screen-result" : "screen-input");
+
+  function openList(){ listFrom = currentScreen; show("screen-list"); }
+  $("toList0").addEventListener("click", openList);
+  $("toList2").addEventListener("click", openList);
+  $("backFromList").addEventListener("click", () => show(listFrom));
+
+  /* トップへ戻る */
+  function goTop(){
+    if(cancelDraw) cancelDraw();
+    show("screen-top");
+  }
+  $("homeBtn").addEventListener("click", goTop);
+
+  /* はじめる: 自分の設定が残っていれば今日の結果へ、無ければ入力へ */
+  $("start").addEventListener("click", () => {
+    const saved = readSelf();
+    if(saved){ mode = "self"; startFortune(saved, false); }
+    else { openInput("self"); }
   });
+
+  function readSelf(){
+    let saved = null;
+    try{ saved = JSON.parse(localStorage.getItem("pf_self") || "null"); }catch(e){}
+    return (saved && saved.m && saved.d && saved.t != null) ? saved : null;
+  }
 
   /* 起動 */
   (function boot(){
-    let saved = null;
-    try{ saved = JSON.parse(localStorage.getItem("pf_self") || "null"); }catch(e){}
-    if(saved && saved.m && saved.d && saved.t != null){
-      mode = "self";
-      startFortune(saved, false);
-    }else{
-      openInput("self");
-    }
+    $("topChar").innerHTML = charHtml(null);
+    show("screen-top");
   })();
 })();
 </script>
