@@ -156,6 +156,10 @@
     .ppl li{padding:9px 0;border-bottom:1px dashed rgba(255,255,255,.1);font-size:14px}
     .ppl li:last-child{border-bottom:none}
     .ppl .meta{font-size:11.5px;color:var(--sub);margin-left:6px}
+    .mybd{display:none;margin:0 0 12px;padding:11px 13px;border-radius:11px;
+      background:rgba(229,196,106,.12);border:1px solid rgba(229,196,106,.4);
+      color:var(--gold);font-size:14px;font-weight:700;text-align:center}
+    .mybd.on{display:block}
 
     /* --- 一覧 --- */
     .grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
@@ -320,9 +324,10 @@
     </div>
 
     <div class="panel">
-      <h2>今日は何の日</h2>
-      <p style="font-size:15.5px;font-weight:800;margin:0 0 6px" id="rDayT"></p>
-      <p style="font-size:14px;margin:0;color:#e6dffb" id="rDayD"></p>
+      <h2>今日は誰の誕生日 <span id="rTodayLabel" style="float:right;color:var(--sub);letter-spacing:0"></span></h2>
+      <p class="mybd" id="rMyBd"></p>
+      <ul class="ppl" id="rBorn"></ul>
+      <p class="note" id="rDayNote"></p>
     </div>
 
     <button class="btn sub" id="again">別の人を占う</button>
@@ -355,14 +360,14 @@
   </footer>
 </div>
 
-<script src="data-types.js?v=7"></script>
-<script src="data-total.js?v=7"></script>
-<script src="data-work.js?v=7"></script>
-<script src="data-money.js?v=7"></script>
-<script src="data-friend.js?v=7"></script>
-<script src="data-love.js?v=7"></script>
-<script src="data-calendar.js?v=7"></script>
-<script src="data-people.js?v=7"></script>
+<script src="data-types.js?v=8"></script>
+<script src="data-total.js?v=8"></script>
+<script src="data-work.js?v=8"></script>
+<script src="data-money.js?v=8"></script>
+<script src="data-friend.js?v=8"></script>
+<script src="data-love.js?v=8"></script>
+<script src="data-calendar.js?v=8"></script>
+<script src="data-people.js?v=8"></script>
 <script>
 (function(){
   "use strict";
@@ -499,17 +504,21 @@
     const color = pick(LUCKY_COLORS, rc);
     const item = pick(LUCKY_ITEMS, ri);
 
-    /* 今日は何の日 */
+    /* 今日は誰の誕生日 */
     const now = new Date();
-    const ev = DAY_EVENTS[`${now.getMonth()+1}-${now.getDate()}`];
-    let dayT, dayD;
-    if(ev){ dayT = ev[0]; dayD = ev[1]; }
-    else{
-      const notes = SEASON_NOTES[now.getMonth()];
-      const rs = rngFrom(`season:${day}`);
-      dayT = `${now.getMonth()+1}月${now.getDate()}日`;
-      dayD = pick(notes, rs);
+    const tm = now.getMonth() + 1, td = now.getDate();
+    const born = PEOPLE.filter(p => p.m === tm && p.d === td);
+    /* 4人より多い日は日付を種にして回す(その日のうちは変わらない) */
+    let todayPeople = born;
+    if(born.length > 4){
+      const rb = rngFrom(`born:${day}`);
+      const off = Math.floor(rb() * born.length);
+      todayPeople = born.slice(off).concat(born.slice(0, off)).slice(0, 4);
     }
+    /* 固有の記念日がある日だけ一行添える(季節の埋め草は出さない) */
+    const ev = DAY_EVENTS[`${tm}-${td}`];
+    const dayNote = ev ? `${ev[0]}。${ev[1]}` : "";
+    const isMyBirthday = (profile.m === tm && profile.d === td);
 
     /* 相性 */
     const ga = goodAttrs(attr), sa = sparkAttr(attr);
@@ -530,7 +539,8 @@
     }
     const same = PEOPLE.filter(p => p.m === profile.m && p.d === profile.d).slice(0, 3);
 
-    return { attr, temper, level, items, color, item, dayT, dayD, good, spark, people: chosen, same };
+    return { attr, temper, level, items, color, item, good, spark, people: chosen, same,
+             todayPeople, dayNote, isMyBirthday, todayLabel: `${tm}月${td}日` };
   }
 
   /* ===================== 画面 ===================== */
@@ -628,8 +638,19 @@
 
     $("rColor").innerHTML = `<span class="chip" style="background:${res.color.hex}"></span>${res.color.name}`;
     $("rItem").textContent = res.item;
-    $("rDayT").textContent = res.dayT;
-    $("rDayD").textContent = res.dayD;
+    $("rTodayLabel").textContent = res.todayLabel;
+    $("rBorn").innerHTML = res.todayPeople.length
+      ? res.todayPeople.map(p =>
+          `<li>${p.name}<span class="meta">${p.note} / ${p.era}${p.jp ? " ・新暦換算" : ""}</span></li>`).join("")
+      : `<li>この日の登録はまだありません。</li>`;
+    if(res.isMyBirthday){
+      $("rMyBd").textContent = "今日はあなたの誕生日です。おめでとうございます。";
+      $("rMyBd").classList.add("on");
+    }else{
+      $("rMyBd").textContent = "";
+      $("rMyBd").classList.remove("on");
+    }
+    $("rDayNote").textContent = res.dayNote;
 
     const mk = (o, cls) => {
       const at = ATTRS[o.attr];
@@ -645,7 +666,8 @@
       ? res.people.map(p => `<li>${p.name}<span class="meta">${p.note} / ${p.era}</span></li>`).join("")
       : `<li>該当する人物がいませんでした。</li>`;
 
-    if(res.same.length){
+    /* 今日が本人の誕生日なら「今日は誰の誕生日」と同じ顔ぶれになるので出さない */
+    if(res.same.length && !res.isMyBirthday){
       $("rSameWrap").style.display = "";
       $("rSame").innerHTML = res.same.map(p =>
         `<li>${p.name}<span class="meta">${p.note} / ${p.era}${p.jp ? " ・新暦換算" : ""}</span></li>`).join("");
