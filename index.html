@@ -143,16 +143,6 @@
     .match .rg{font-size:11.5px;color:var(--sub)}
     .match.spark{border:1px dashed rgba(229,196,106,.45);background:transparent}
 
-    /* --- 気質のトグル --- */
-    .tog{border-bottom:1px solid rgba(255,255,255,.1)}
-    .tog:last-child{border-bottom:none}
-    .tog summary{list-style:none;cursor:pointer;padding:13px 2px;font-size:14.5px;font-weight:700;
-      display:flex;align-items:center;justify-content:space-between;gap:10px}
-    .tog summary::-webkit-details-marker{display:none}
-    .tog summary::after{content:"＋";color:var(--gold);font-size:15px;flex:none}
-    .tog[open] summary::after{content:"−"}
-    .tog .in{padding:0 2px 15px;font-size:13.5px;color:#e6dffb}
-    .tog .in .cc{color:var(--gold);font-size:12px;letter-spacing:.1em;display:block;margin-bottom:6px}
     .ppl{margin:0;padding:0;list-style:none}
     .ppl li{padding:9px 0;border-bottom:1px dashed rgba(255,255,255,.1);font-size:14px}
     .ppl li:last-child{border-bottom:none}
@@ -306,11 +296,6 @@
     </div>
 
     <div class="panel">
-      <h2>血液型について</h2>
-      <div id="rTempers"></div>
-    </div>
-
-    <div class="panel">
       <h2>相性の良い人</h2>
       <div id="rGood"></div>
       <h2 style="margin-top:22px">刺激をくれる人</h2>
@@ -353,10 +338,6 @@
       <p class="note" style="margin:0 0 16px">12星座 × 4血液型で48タイプ。組み合わせごとに属性が決まります(例: 双子座 × B型 なら疾風属性)。</p>
       <div class="grid" id="listGrid"></div>
     </div>
-    <div class="panel">
-      <h2>血液型について</h2>
-      <div id="listTempers"></div>
-    </div>
     <button class="btn sub" id="backFromList">もどる</button>
   </section>
 
@@ -369,14 +350,14 @@
   </footer>
 </div>
 
-<script src="data-types.js?v=10"></script>
-<script src="data-total.js?v=10"></script>
-<script src="data-work.js?v=10"></script>
-<script src="data-money.js?v=10"></script>
-<script src="data-friend.js?v=10"></script>
-<script src="data-love.js?v=10"></script>
-<script src="data-calendar.js?v=10"></script>
-<script src="data-people.js?v=10"></script>
+<script src="data-types.js?v=11"></script>
+<script src="data-total.js?v=11"></script>
+<script src="data-work.js?v=11"></script>
+<script src="data-money.js?v=11"></script>
+<script src="data-friend.js?v=11"></script>
+<script src="data-love.js?v=11"></script>
+<script src="data-calendar.js?v=11"></script>
+<script src="data-people.js?v=11"></script>
 <script>
 (function(){
   "use strict";
@@ -696,9 +677,6 @@
       ? "相性の人物は物故者のみ。同じ誕生日には生年月日が公表されている存命の方も含みます。"
       : "収録しているのは、生年月日がはっきり分かっている人物だけです。";
 
-    /* 4つの気質の説明(トグル) */
-    $("rTempers").innerHTML = temperTogglesHtml(res.temper);
-
     $("rStat").textContent = "";
     if(mode === "self") loadStat(res);
   }
@@ -786,15 +764,6 @@
       ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
   }
 
-  /* 血液型の説明トグル。mine を渡すとその血液型だけ最初から開く */
-  function temperTogglesHtml(mine){
-    return BLOODS.map((b, i) => `
-      <details class="tog"${i === mine ? " open" : ""}>
-        <summary>${b.name}とは？</summary>
-        <div class="in">${b.body}</div>
-      </details>`).join("");
-  }
-
   /* 48タイプ一覧。星座ごとに 4 つの属性を並べる */
   (function buildList(){
     $("listGrid").innerHTML = SIGNS.map((s, i) => `
@@ -804,7 +773,6 @@
         <div class="vs">${s.types.map((t, j) =>
           `<b>${t.name}属性</b> <span>${BLOODS[j].name}</span>`).join("<br>")}</div>
       </div>`).join("");
-    $("listTempers").innerHTML = temperTogglesHtml(-1);
   })();
 
   /* ===================== 遷移 ===================== */
