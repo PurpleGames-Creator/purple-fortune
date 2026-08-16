@@ -112,6 +112,9 @@
       background:linear-gradient(170deg,rgba(60,36,110,.9),rgba(26,14,58,.9));position:relative;overflow:hidden}
     .typecard::before{content:"";position:absolute;inset:7px;border:1px solid rgba(229,196,106,.3);
       border-radius:14px;pointer-events:none}
+    .symbadge{display:flex;align-items:center;justify-content:center;
+      width:88px;height:88px;margin:2px auto 4px;border-radius:50%;
+      background:rgba(255,255,255,.05);border:1px solid rgba(229,196,106,.35)}
     .tname{font-size:25px;font-weight:800;margin:10px 0 4px;letter-spacing:.04em}
     .tcatch{font-size:13px;color:var(--gold);letter-spacing:.14em;margin:0 0 14px}
     .tbody{font-size:14px;text-align:left;color:#e6dffb;margin:0}
@@ -275,7 +278,7 @@
   <section id="screen-result" class="screen">
     <div class="panel" style="padding:0;border:none;background:none;box-shadow:none">
       <div class="typecard">
-        <div class="paputaro" id="resChar"></div>
+        <div class="symbadge" id="resSym"></div>
         <p class="tname" id="rName"></p>
         <p class="tcatch" id="rCatch"></p>
         <p class="tbody" id="rBody"></p>
@@ -352,14 +355,14 @@
   </footer>
 </div>
 
-<script src="data-types.js?v=5"></script>
-<script src="data-total.js?v=5"></script>
-<script src="data-work.js?v=5"></script>
-<script src="data-money.js?v=5"></script>
-<script src="data-friend.js?v=5"></script>
-<script src="data-love.js?v=5"></script>
-<script src="data-calendar.js?v=5"></script>
-<script src="data-people.js?v=5"></script>
+<script src="data-types.js?v=6"></script>
+<script src="data-total.js?v=6"></script>
+<script src="data-work.js?v=6"></script>
+<script src="data-money.js?v=6"></script>
+<script src="data-friend.js?v=6"></script>
+<script src="data-love.js?v=6"></script>
+<script src="data-calendar.js?v=6"></script>
+<script src="data-people.js?v=6"></script>
 <script>
 (function(){
   "use strict";
@@ -604,7 +607,7 @@
   /* 結果の描画 */
   function render(res, profile){
     const a = ATTRS[res.attr];
-    $("resChar").innerHTML = charHtml(res.attr);
+    $("resSym").innerHTML = symSvg(res.attr, 52);
     $("rName").textContent = typeName(res.attr, res.temper);
     $("rCatch").textContent = res.temper < 0
       ? a.catch
