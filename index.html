@@ -213,7 +213,7 @@
       <div class="paputaro" id="topChar"></div>
       <p class="lead">生まれた日と血液型で、48タイプ。<br />
         あなたの本質と今日の運勢、<br />相性の良い人を占います。</p>
-      <button class="btn" id="start">はじめる</button>
+      <button class="btn" id="start">今日の運勢を占う</button>
     </div>
     <button class="btn sub" id="toList0">48タイプをぜんぶ見る</button>
 
@@ -277,6 +277,16 @@
 
   <!-- ===== 結果 ===== -->
   <section id="screen-result" class="screen">
+    <div class="panel">
+      <h2>今日の運勢 <span id="rDate" style="float:right;color:var(--sub);letter-spacing:0"></span></h2>
+      <div class="lv"><b id="rLevel"></b><span id="rLevelSub"></span></div>
+      <ul class="items" id="rItems"></ul>
+      <div class="lucky">
+        <div><span class="k">ラッキーカラー</span><span class="v" id="rColor"></span></div>
+        <div><span class="k">ラッキーアイテム</span><span class="v" id="rItem"></span></div>
+      </div>
+    </div>
+
     <div class="panel" style="padding:0;border:none;background:none;box-shadow:none">
       <div class="typecard">
         <div class="symbadge" id="resSym"></div>
@@ -287,16 +297,6 @@
         <p class="share" id="rShare"></p>
       </div>
       <p class="stat" id="rStat"></p>
-    </div>
-
-    <div class="panel">
-      <h2>今日の運勢 <span id="rDate" style="float:right;color:var(--sub);letter-spacing:0"></span></h2>
-      <div class="lv"><b id="rLevel"></b><span id="rLevelSub"></span></div>
-      <ul class="items" id="rItems"></ul>
-      <div class="lucky">
-        <div><span class="k">ラッキーカラー</span><span class="v" id="rColor"></span></div>
-        <div><span class="k">ラッキーアイテム</span><span class="v" id="rItem"></span></div>
-      </div>
     </div>
 
     <div class="panel">
@@ -353,14 +353,14 @@
   </footer>
 </div>
 
-<script src="data-types.js?v=14"></script>
-<script src="data-total.js?v=14"></script>
-<script src="data-work.js?v=14"></script>
-<script src="data-money.js?v=14"></script>
-<script src="data-friend.js?v=14"></script>
-<script src="data-love.js?v=14"></script>
-<script src="data-calendar.js?v=14"></script>
-<script src="data-people.js?v=14"></script>
+<script src="data-types.js?v=15"></script>
+<script src="data-total.js?v=15"></script>
+<script src="data-work.js?v=15"></script>
+<script src="data-money.js?v=15"></script>
+<script src="data-friend.js?v=15"></script>
+<script src="data-love.js?v=15"></script>
+<script src="data-calendar.js?v=15"></script>
+<script src="data-people.js?v=15"></script>
 <script>
 (function(){
   "use strict";
