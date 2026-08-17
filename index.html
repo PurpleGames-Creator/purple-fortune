@@ -353,14 +353,14 @@
   </footer>
 </div>
 
-<script src="data-types.js?v=15"></script>
-<script src="data-total.js?v=15"></script>
-<script src="data-work.js?v=15"></script>
-<script src="data-money.js?v=15"></script>
-<script src="data-friend.js?v=15"></script>
-<script src="data-love.js?v=15"></script>
-<script src="data-calendar.js?v=15"></script>
-<script src="data-people.js?v=15"></script>
+<script src="data-types.js?v=16"></script>
+<script src="data-total.js?v=16"></script>
+<script src="data-work.js?v=16"></script>
+<script src="data-money.js?v=16"></script>
+<script src="data-friend.js?v=16"></script>
+<script src="data-love.js?v=16"></script>
+<script src="data-calendar.js?v=16"></script>
+<script src="data-people.js?v=16"></script>
 <script>
 (function(){
   "use strict";
@@ -878,10 +878,11 @@
   }
   $("homeBtn").addEventListener("click", goTop);
 
-  /* はじめる: 自分の設定が残っていれば今日の結果へ、無ければ入力へ */
+  /* 今日の運勢を占う: 設定が残っていればそのまま占い、無ければ入力へ。
+     カードをめくる演出は2回目以降も毎回出す(急ぐ人はスキップできる)。 */
   $("start").addEventListener("click", () => {
     const saved = readSelf();
-    if(saved){ mode = "self"; startFortune(saved, false); }
+    if(saved){ mode = "self"; startFortune(saved, true); }
     else { openInput("self"); }
   });
 
