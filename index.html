@@ -93,8 +93,19 @@
     .aura{filter:blur(16px);opacity:.62}
 
     /* --- 演出カード --- */
-    .deck{display:flex;gap:11px;justify-content:center;margin:26px 0 8px;perspective:1000px}
-    .tcard{flex:1;max-width:112px;aspect-ratio:2/3;border-radius:13px;position:relative;
+    /* 本質は毎日変わらないのでめくらせない。横長1枚で最初から表に出す */
+    .essence{margin:22px auto 0;max-width:340px;border-radius:13px;padding:14px 16px;
+      border:1.5px solid var(--gold);background:linear-gradient(170deg,#3a2270,#1d1140);
+      display:flex;align-items:center;justify-content:center;gap:14px;text-align:left;
+      animation:essIn .55s ease both}
+    @keyframes essIn{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
+    .essence svg{width:40px;height:40px;flex:none}
+    .essence .lbl{font-size:10.5px;color:var(--gold);letter-spacing:.16em;display:block}
+    .essence .val{font-size:17px;font-weight:800;line-height:1.3;display:block;margin-top:3px}
+    .essence .sub{font-size:12px;color:var(--sub);display:block;margin-top:3px}
+
+    .deck{display:flex;gap:11px;justify-content:center;margin:14px 0 8px;perspective:1000px}
+    .tcard{flex:1;max-width:124px;aspect-ratio:2/3;border-radius:13px;position:relative;
       transform-style:preserve-3d;transition:transform .75s cubic-bezier(.4,.1,.2,1);cursor:pointer}
     .tcard.flip{transform:rotateY(180deg)}
     .tf,.tb{position:absolute;inset:0;border-radius:13px;backface-visibility:hidden;
@@ -105,7 +116,6 @@
     .tb{transform:rotateY(180deg);background:linear-gradient(170deg,#3a2270,#1d1140)}
     .tb .lbl{font-size:10.5px;color:var(--gold);letter-spacing:.16em}
     .tb .val{font-size:15px;font-weight:800;line-height:1.35}
-    .tb svg{width:34px;height:34px}
 
     /* --- 結果 --- */
     .typecard{text-align:center;border:1.5px solid var(--gold);border-radius:20px;padding:22px 16px;
@@ -280,11 +290,11 @@
   <section id="screen-draw" class="screen">
     <div class="panel" style="text-align:center">
       <div class="paputaro" id="drawChar"></div>
-      <p id="drawMsg" style="font-size:14px;color:var(--sub);margin:4px 0 0">カードをめくります…</p>
+      <div class="essence" id="essence"></div>
+      <p id="drawMsg" style="font-size:14px;color:var(--sub);margin:14px 0 0">カードをめくります…</p>
       <div class="deck" id="deck">
         <div class="tcard" data-i="0"><div class="tf"><span>✦</span></div><div class="tb"></div></div>
         <div class="tcard" data-i="1"><div class="tf"><span>✦</span></div><div class="tb"></div></div>
-        <div class="tcard" data-i="2"><div class="tf"><span>✦</span></div><div class="tb"></div></div>
       </div>
       <button class="btn sub" id="skip" style="margin-top:16px">結果を見る</button>
     </div>
@@ -646,20 +656,26 @@
   /* 演出 */
   function runDraw(res, done){
     $("drawChar").innerHTML = charHtml(res.attr);
+    /* 本質は一生変わらない事実なので、めくらせずに最初から表で出す */
+    const ess = res.temper < 0
+      ? { val: SIGNS[res.attr].name, sub: "" }
+      : { val: attrName(res.attr, res.temper), sub: plainName(res.attr, res.temper) };
+    $("essence").innerHTML = symSvg(res.attr, 40) +
+      `<div><span class="lbl">あなたの本質</span><span class="val">${ess.val}</span>` +
+      (ess.sub ? `<span class="sub">${ess.sub}</span>` : "") + `</div>`;
+
     const cards = document.querySelectorAll("#deck .tcard");
     const backs = [
-      { lbl:"あなたの本質",
-        val: res.temper < 0 ? SIGNS[res.attr].name : attrName(res.attr, res.temper), sym: true },
-      { lbl:"今日の運勢", val: res.level.name, sym: false },
-      { lbl:"相性", val: plainName(res.good[0].attr, res.good[0].temper), sym: false }
+      { lbl:"今日の運勢", val: res.level.name },
+      { lbl:"相性", val: plainName(res.good[0].attr, res.good[0].temper) }
     ];
     cards.forEach((c, i) => {
       c.classList.remove("flip");
-      const b = c.querySelector(".tb");
-      b.innerHTML = `${backs[i].sym ? symSvg(res.attr, 34) : ""}
-        <span class="lbl">${backs[i].lbl}</span><span class="val">${backs[i].val}</span>`;
+      c.querySelector(".tb").innerHTML =
+        `<span class="lbl">${backs[i].lbl}</span><span class="val">${backs[i].val}</span>`;
     });
-    const msgs = ["1枚目、あなたの本質…", "2枚目、今日の運勢…", "3枚目、あなたの相性…"];
+    const msgs = ["1枚目、今日の運勢…", "2枚目、あなたの相性…"];
+
     let i = 0, timer = null;
     function step(){
       if(i >= cards.length){ clearTimeout(timer); setTimeout(done, 900); return; }
