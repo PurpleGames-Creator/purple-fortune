@@ -128,7 +128,11 @@
     .items{margin:0;padding:0;list-style:none}
     .items li{padding:12px 0;border-bottom:1px dashed rgba(255,255,255,.11)}
     .items li:last-child{border-bottom:none}
-    .items .k{font-size:11.5px;color:var(--gold);letter-spacing:.16em;display:block;margin-bottom:3px}
+    .items .k{font-size:11.5px;color:var(--gold);letter-spacing:.16em;margin-bottom:3px;
+      display:flex;align-items:center;justify-content:space-between;gap:8px}
+    .items .wx{display:inline-flex;align-items:center;gap:6px;flex:none;
+      font-size:11px;color:var(--sub);letter-spacing:.02em}
+    .items .wx svg{width:23px;height:23px;flex:none}
     .items .v{font-size:14.5px}
 
     .lucky{display:flex;gap:11px;margin-top:14px}
@@ -474,6 +478,31 @@
     `<path d="M13.2 1.6 4.2 13.9h5.9L8.8 22.4l9.4-12.6h-6.1z" fill="#e5c46a" ` +
     `stroke="#fff2c9" stroke-width=".8" stroke-linejoin="round"/></svg>`;
 
+  /* 今日の運勢の天気マーク。項目ごとの吉凶(tier)をそのまま晴/くもり/雨に読み替える */
+  const WX = {
+    high: { name: "晴れ", svg:
+      `<circle cx="12" cy="12" r="4.8" fill="#e5c46a"/>` +
+      `<g stroke="#e5c46a" stroke-width="1.9" stroke-linecap="round">` +
+      `<path d="M12 2.3v2.5M12 19.2v2.5M2.3 12h2.5M19.2 12h2.5` +
+      `M5.2 5.2l1.8 1.8M17 17l1.8 1.8M18.8 5.2l-1.8 1.8M7 17l-1.8 1.8"/></g>` },
+    mid: { name: "くもり", svg: CLOUD_PATH("#b9addb") },
+    low: { name: "雨", svg:
+      `<g transform="translate(0,-1.8)">${CLOUD_PATH("#9f93c4")}</g>` +
+      `<g stroke="#7fb6e8" stroke-width="2" stroke-linecap="round">` +
+      `<path d="M7.4 19.4l-1.2 2.8M12 19.4l-1.2 2.8M16.6 19.4l-1.2 2.8"/></g>` }
+  };
+  function CLOUD_PATH(c){
+    return `<path d="M17.3 18.4H7.1a4.5 4.5 0 0 1-.6-8.95 6 6 0 0 1 11.3 1.55` +
+           ` 3.75 3.75 0 0 1-.5 7.4z" fill="${c}"/>`;
+  }
+  /* アイコンは装飾。読み上げには隣の「晴れ」等のテキストが使われる */
+  function wxHtml(tier){
+    const w = WX[tier];
+    return `<span class="wx"><svg viewBox="0 0 24 24" aria-hidden="true">${w.svg}</svg>` +
+           `<span>${w.name}</span></span>`;
+  }
+
+
   /* ===== パプ太郎(占い師姿: 背後のマント + ターバン) ===== */
   function charHtml(attr){
     const c = attr == null ? "#a97bff" : SIGNS[attr].color;
@@ -665,7 +694,7 @@
     $("rLevelSub").textContent = "今日の総合運";
 
     $("rItems").innerHTML = res.items.map(it =>
-      `<li><span class="k">${it.label}</span><span class="v">${it.text}</span></li>`).join("");
+      `<li><span class="k">${it.label}${wxHtml(it.tier)}</span><span class="v">${it.text}</span></li>`).join("");
 
     $("rColor").innerHTML = `<span class="chip" style="background:${res.color.hex}"></span>${res.color.name}`;
     $("rItem").textContent = res.item;
