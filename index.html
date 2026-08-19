@@ -141,7 +141,18 @@
     .match{background:rgba(255,255,255,.05);border-radius:13px;padding:14px;margin-bottom:10px}
     .match .nm{font-size:15.5px;font-weight:800;margin:0 0 3px}
     .match .rg{font-size:11.5px;color:var(--sub)}
-    .match.spark{border:1px dashed rgba(229,196,106,.45);background:transparent}
+    /* 刺激をくれる人。「相性の良い人」の丸カードと形そのもので区別する */
+    .match.spark{position:relative;background:transparent;border:none;border-radius:0;
+      padding:15px 46px 15px 15px;filter:drop-shadow(0 6px 16px rgba(229,196,106,.22))}
+    .match.spark::before{content:"";position:absolute;inset:0;
+      background:linear-gradient(135deg,var(--gold) 10%,rgba(169,123,255,.95) 90%);
+      clip-path:polygon(0 0,calc(100% - 20px) 0,100% 20px,100% 100%,20px 100%,0 calc(100% - 20px))}
+    .match.spark::after{content:"";position:absolute;inset:1.6px;
+      background:linear-gradient(135deg,#331a63,var(--card));
+      clip-path:polygon(0 0,calc(100% - 19px) 0,100% 19px,100% 100%,19px 100%,0 calc(100% - 19px))}
+    .match.spark .nm,.match.spark .rg{position:relative;z-index:1}
+    .match.spark .bolt{position:absolute;right:14px;top:50%;transform:translateY(-50%);
+      z-index:1;width:26px;height:26px}
 
     .ppl{margin:0;padding:0;list-style:none}
     .ppl li{padding:9px 0;border-bottom:1px dashed rgba(255,255,255,.1);font-size:14px}
@@ -457,6 +468,12 @@
     return `<svg viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true"><path d="${s.p}" ${style}/></svg>`;
   }
 
+  /* 「刺激をくれる人」カードに添える稲妻 */
+  const SPARK_BOLT =
+    `<svg class="bolt" viewBox="0 0 24 24" aria-hidden="true">` +
+    `<path d="M13.2 1.6 4.2 13.9h5.9L8.8 22.4l9.4-12.6h-6.1z" fill="#e5c46a" ` +
+    `stroke="#fff2c9" stroke-width=".8" stroke-linejoin="round"/></svg>`;
+
   /* ===== パプ太郎(占い師姿: 背後のマント + ターバン) ===== */
   function charHtml(attr){
     const c = attr == null ? "#a97bff" : SIGNS[attr].color;
@@ -671,7 +688,7 @@
       const sub = o.temper < 0 ? rangeText(at)
                                : `${attrName(o.attr, o.temper)} ・ ${rangeText(at)}`;
       return `<div class="match ${cls}"><p class="nm">${plainName(o.attr, o.temper)}</p>` +
-             `<span class="rg">${sub}</span></div>`;
+             `<span class="rg">${sub}</span>${cls === "spark" ? SPARK_BOLT : ""}</div>`;
     };
     $("rGood").innerHTML = res.good.map(o => mk(o, "")).join("");
     $("rSpark").innerHTML = mk(res.spark, "spark");
