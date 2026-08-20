@@ -204,7 +204,7 @@
 
     .match{background:rgba(255,255,255,.05);border-radius:13px;padding:14px;margin-bottom:10px}
     .match .nm{font-size:15.5px;font-weight:800;margin:0 0 3px}
-    .match .rg{font-size:11.5px;color:var(--sub)}
+    .match .rg{display:block;font-size:11.5px;color:var(--sub);line-height:1.6}
     /* 刺激をくれる人。「相性の良い人」の丸カードと形そのもので区別する */
     .match.spark{position:relative;background:transparent;border:none;border-radius:0;
       padding:15px 46px 15px 15px;filter:drop-shadow(0 6px 16px rgba(229,196,106,.22))}
@@ -361,7 +361,7 @@
 </a>
 
 <button class="sndbtn" id="sndBtn" type="button" aria-pressed="true" aria-label="音楽を消す"></button>
-<audio id="bgm" src="./bgm.mp3?v=1" loop preload="auto"></audio>
+<audio id="bgm" src="./bgm.mp3?v=2" loop preload="auto"></audio>
 
 <div class="wrap">
   <header class="top">
@@ -926,15 +926,8 @@
     }
     $("rDayNote").textContent = res.dayNote;
 
-    const mk = (o, cls) => {
-      const at = SIGNS[o.attr];
-      const sub = o.temper < 0 ? rangeText(at)
-                               : `${attrName(o.attr, o.temper)} ・ ${rangeText(at)}`;
-      return `<div class="match ${cls}"><p class="nm">${plainName(o.attr, o.temper)}</p>` +
-             `<span class="rg">${sub}</span>${cls === "spark" ? SPARK_BOLT : ""}</div>`;
-    };
-    $("rGood").innerHTML = res.good.map(o => mk(o, "")).join("");
-    $("rSpark").innerHTML = mk(res.spark, "spark");
+    $("rGood").innerHTML = res.good.map(o => matchCard(o, "")).join("");
+    $("rSpark").innerHTML = matchCard(res.spark, "spark");
     loadMatchPeople(res);
 
     $("rPeople").innerHTML = res.people.length
@@ -952,6 +945,18 @@
     }
     $("rStat").textContent = "";
     if(mode === "self") loadStat(res);
+  }
+
+  /* 相性・刺激のカード。他のページと同じく属性名を主役、星座×血液型はその下に置く。
+     結果画面と図鑑の3段目で同じものを使う(以前は別々に書いていて食い違っていた)。 */
+  function matchCard(o, cls){
+    const at = SIGNS[o.attr];
+    const big = o.temper < 0 ? at.name : attrName(o.attr, o.temper);
+    const sub = o.temper < 0 ? rangeText(at)
+                             : `${plainName(o.attr, o.temper)} ・ ${rangeText(at)}`;
+    return `<div class="match ${cls}"><p class="nm">${big}</p>` +
+           `<span class="rg">${sub}</span>` +
+           (cls === "spark" ? SPARK_BOLT : "") + `</div>`;
   }
 
   /* タイプ分布 */
@@ -1241,17 +1246,11 @@
 
     /* 相性は誕生日が無くても星座と血液型だけで決まるので、図鑑でも出せる */
     const ga = goodSigns(i), gt = BLOOD_GOOD[j];
-    const mk = (o, cls) => {
-      const at = SIGNS[o.attr];
-      return `<div class="match ${cls}"><p class="nm">${plainName(o.attr, o.temper)}</p>` +
-             `<span class="rg">${attrName(o.attr, o.temper)} ・ ${rangeText(at)}</span>` +
-             (cls === "spark" ? SPARK_BOLT : "") + `</div>`;
-    };
     $("typeMatch").innerHTML =
       `<h2>相性の良い人</h2>` +
-      ga.map((a, k) => mk({ attr: a, temper: gt[k] }, "")).join("") +
+      ga.map((a, k) => matchCard({ attr: a, temper: gt[k] }, "")).join("") +
       `<h2 style="margin-top:22px">刺激をくれる人</h2>` +
-      mk({ attr: sparkSign(i), temper: BLOOD_SPARK[j] }, "spark");
+      matchCard({ attr: sparkSign(i), temper: BLOOD_SPARK[j] }, "spark");
   }
 
   /* 表示の切り替え。restore=true の時だけ、前に見ていたスクロール位置に戻す */
