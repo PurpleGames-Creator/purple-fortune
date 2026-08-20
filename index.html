@@ -202,21 +202,37 @@
     .chip{display:inline-block;width:15px;height:15px;border-radius:50%;vertical-align:-2px;
       margin-right:6px;border:1px solid rgba(255,255,255,.5)}
 
-    .match{background:rgba(255,255,255,.05);border-radius:13px;padding:14px;margin-bottom:10px}
-    .match .nm{font-size:15.5px;font-weight:800;margin:0 0 3px}
+    /* 押すとその属性の詳細ページへ飛ぶので button。左に属性マークを置く */
+    .match{position:relative;display:flex;align-items:center;gap:12px;
+      width:100%;text-align:left;font:inherit;color:inherit;cursor:pointer;
+      background:rgba(255,255,255,.05);border:none;border-radius:13px;
+      padding:14px 32px 14px 14px;margin-bottom:10px;
+      -webkit-tap-highlight-color:transparent;transition:transform .12s ease}
+    .match:active{transform:scale(.985)}
+    .match:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+    .match .msym{flex:none;width:36px;height:36px;border-radius:50%;
+      display:flex;align-items:center;justify-content:center;
+      background:rgba(255,255,255,.06);border:1px solid rgba(229,196,106,.3)}
+    .match .msym svg{width:20px;height:20px}
+    .match .mtxt{min-width:0;flex:1}
+    .match .nm{display:block;font-size:15.5px;font-weight:800;margin:0 0 3px}
     .match .rg{display:block;font-size:11.5px;color:var(--sub);line-height:1.6}
+    .match .chev{position:absolute;right:12px;top:50%;transform:translateY(-50%);
+      color:var(--sub);font-size:14px}
     /* 刺激をくれる人。「相性の良い人」の丸カードと形そのもので区別する */
     .match.spark{position:relative;background:transparent;border:none;border-radius:0;
-      padding:15px 46px 15px 15px;filter:drop-shadow(0 6px 16px rgba(229,196,106,.22))}
+      padding:15px 62px 15px 15px;filter:drop-shadow(0 6px 16px rgba(229,196,106,.22))}
     .match.spark::before{content:"";position:absolute;inset:0;
       background:linear-gradient(135deg,var(--gold) 10%,rgba(169,123,255,.95) 90%);
       clip-path:polygon(0 0,calc(100% - 20px) 0,100% 20px,100% 100%,20px 100%,0 calc(100% - 20px))}
     .match.spark::after{content:"";position:absolute;inset:1.6px;
       background:linear-gradient(135deg,#331a63,var(--card));
       clip-path:polygon(0 0,calc(100% - 19px) 0,100% 19px,100% 100%,19px 100%,0 calc(100% - 19px))}
-    .match.spark .nm,.match.spark .rg{position:relative;z-index:1}
-    .match.spark .bolt{position:absolute;right:14px;top:50%;transform:translateY(-50%);
+    /* 「> *」でまとめると .chev の position:absolute まで上書きしてしまうので個別に指定する */
+    .match.spark .msym,.match.spark .mtxt{position:relative;z-index:1}
+    .match.spark .bolt{position:absolute;right:36px;top:50%;transform:translateY(-50%);
       z-index:1;width:26px;height:26px}
+    .match.spark .chev{right:14px;z-index:1}
 
     /* 相性カードの中に出す該当者。いない時は行ごと出さない */
     .match .mwho{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:10px;
@@ -958,10 +974,23 @@
     const big = o.temper < 0 ? at.name : attrName(o.attr, o.temper);
     const sub = o.temper < 0 ? rangeText(at)
                              : `${plainName(o.attr, o.temper)} ・ ${rangeText(at)}`;
-    return `<div class="match ${cls}"><p class="nm">${big}</p>` +
-           `<span class="rg">${sub}</span>` +
-           (cls === "spark" ? SPARK_BOLT : "") + `</div>`;
+    return `<button type="button" class="match ${cls}"` +
+           ` data-attr="${o.attr}" data-temper="${o.temper}"` +
+           ` aria-label="${big}の説明を読む">` +
+           `<span class="msym">${symSvg(o.attr, 20)}</span>` +
+           `<span class="mtxt"><span class="nm">${big}</span>` +
+           `<span class="rg">${sub}</span></span>` +
+           (cls === "spark" ? SPARK_BOLT : "") +
+           `<span class="chev" aria-hidden="true">›</span></button>`;
   }
+
+  /* 相性・刺激のカードから、その属性の詳細ページへ */
+  ["rGood", "rSpark", "typeMatch"].forEach(id => {
+    $(id).addEventListener("click", e => {
+      const b = e.target.closest(".match[data-attr]"); if(!b) return;
+      openListForType(+b.dataset.attr, +b.dataset.temper, null);
+    });
+  });
 
   /* タイプ分布 */
   async function loadStat(res){
@@ -1014,7 +1043,8 @@
       const hit = people.filter(p =>
         p.attr === o.attr && (o.temper < 0 || p.temper === o.temper)).slice(0, 4);
       if(!hit.length) return;
-      card.insertAdjacentHTML("beforeend",
+      /* カードが flex になったので、文字側の箱の中に足す */
+      (card.querySelector(".mtxt") || card).insertAdjacentHTML("beforeend",
         `<div class="mwho"><span class="mwho-lbl">みんなの結果から</span>` +
         hit.map(p => {
           /* 「?」で占った人のカードだけ血液型がばらけるので、その時は血液型も添える */
@@ -1123,7 +1153,8 @@
      血液型「?」で占った人は属性が 星座までしか決まらないので、星座のページ(2段目)まで。 */
   $("board").addEventListener("click", e => {
     const b = e.target.closest(".brow"); if(!b) return;
-    openListForPerson(+b.dataset.attr, +b.dataset.temper, b.dataset.nick);
+    const attr = +b.dataset.attr, temper = +b.dataset.temper;
+    openListForType(attr, temper, { nick: b.dataset.nick, attr, temper });
   });
 
   async function loadBoard(){
@@ -1465,14 +1496,16 @@
     pushListState(false);
   }
 
-  /* 「みんなの結果」の行から、その人の属性ページへ直接入る。
+  /* ある型の詳細ページへ直接入る(みんなの結果の行、相性・刺激のカードから)。
      図鑑を手でたどった時と履歴の積み方を揃えるため、1段目から順に積む。
-     こうしないとパンくずの history.go(段差) と端末の戻るが食い違う。 */
-  function openListForPerson(attr, temper, nick){
-    const deep = temper >= 0;          /* 血液型が分かる人だけ3段目まで行ける */
-    listFrom = currentScreen;
+     こうしないとパンくずの history.go(段差) と端末の戻るが食い違う。
+     who を渡すと「◯◯ さんの本質」の行が出る。 */
+  function openListForType(attr, temper, who){
+    const deep = temper >= 0;          /* 血液型が分かる時だけ3段目まで行ける */
+    /* 図鑑の中から呼ばれた時は、最初に入ってきた画面を出口として保つ */
+    if(currentScreen !== "screen-list") listFrom = currentScreen;
     listSid++;
-    listWho = { nick, attr, temper };
+    listWho = who || null;
     listScroll[0] = listScroll[1] = listScroll[2] = 0;
     show("screen-list");
 
