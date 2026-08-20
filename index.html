@@ -891,6 +891,7 @@
     function flip(){
       if(flipped) return;
       flipped = true;
+      playFlipSfx();
       card.classList.add("flip");
       card.removeAttribute("tabindex");
       card.removeAttribute("role");
@@ -1587,11 +1588,69 @@
     if(bgmOn) playBgm(); else bgmEl.pause();
   });
 
+  /* ===== 効果音 =====
+     音源ファイルは足さず Web Audio で合成する。
+     GainNode なら iOS でも音量が効く(audio.volume は iOS が無視するので
+     BGM は音量をファイルに焼き込んである)。
+     調整はこの3つの数字だけ触れば済むようにしてある。 */
+  const SFX_VOL = 0.22;        /* めくり音の音量。0 で無音、1 で最大 */
+  const SFX_CLICK = 0.05;      /* 着地音の音量。めくり音の半分くらいが目安 */
+  const SFX_MS = 190;          /* めくり音の長さ(ミリ秒) */
+  const SFX_SWEEP = [700, 2600, 900];   /* 紙が返る音の高さの動き(Hz)。低→高→低 */
+
+  let actx = null;
+  function audioCtx(){
+    try{
+      if(!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+      if(actx.state === "suspended") actx.resume();
+      return actx;
+    }catch(e){ return null; }
+  }
+
+  /* カードがめくれる音。紙が空気を切る「サッ」＋着地の「コツ」の2つで作る */
+  function playFlipSfx(){
+    if(!bgmOn) return;                 /* 消音中は効果音も鳴らさない */
+    const c = audioCtx(); if(!c) return;
+    const t = c.currentTime, dur = SFX_MS / 1000;
+
+    /* 1. 紙が返る音: ホワイトノイズをバンドパスで撫でて高さを動かす */
+    const len = Math.max(1, Math.ceil(c.sampleRate * dur));
+    const buf = c.createBuffer(1, len, c.sampleRate);
+    const data = buf.getChannelData(0);
+    for(let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
+    const src = c.createBufferSource(); src.buffer = buf;
+    const bp = c.createBiquadFilter();
+    bp.type = "bandpass"; bp.Q.value = 1.1;
+    bp.frequency.setValueAtTime(SFX_SWEEP[0], t);
+    bp.frequency.exponentialRampToValueAtTime(SFX_SWEEP[1], t + dur * 0.45);
+    bp.frequency.exponentialRampToValueAtTime(SFX_SWEEP[2], t + dur);
+    const g = c.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(SFX_VOL, t + 0.03);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    src.connect(bp); bp.connect(g); g.connect(c.destination);
+    src.start(t); src.stop(t + dur);
+
+    /* 2. 着地の音: 短い低めの音を最後に一度だけ。
+       めくり音はバンドパスで大きく削られるので、素の音量で並べると
+       着地のほうが大きくなってしまう。SFX_CLICK は実測で釣り合う値にしてある。 */
+    const lt = t + dur * 0.8;
+    const o = c.createOscillator(); o.type = "triangle";
+    o.frequency.setValueAtTime(220, lt);
+    const og = c.createGain();
+    og.gain.setValueAtTime(0.0001, lt);
+    og.gain.exponentialRampToValueAtTime(SFX_CLICK, lt + 0.008);
+    og.gain.exponentialRampToValueAtTime(0.0001, lt + 0.09);
+    o.connect(og); og.connect(c.destination);
+    o.start(lt); o.stop(lt + 0.1);
+  }
+
   /* 最初のユーザー操作で鳴らし始める。
      ただしスピーカーボタン自身の操作は click 側に任せる(消しに来た人に一瞬鳴らさないため) */
   function kickBgm(e){
     if(e && e.target && e.target.closest && e.target.closest("#sndBtn")) return;
     playBgm();
+    audioCtx();   /* iOS は操作の中でしか AudioContext を起こせないので、ここで開けておく */
     window.removeEventListener("pointerdown", kickBgm);
     window.removeEventListener("keydown", kickBgm);
   }
