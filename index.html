@@ -129,6 +129,15 @@
     .tplain{font-size:17px;font-weight:700;color:#fff;margin:0 0 8px;letter-spacing:.08em}
     .tcatch{font-size:13px;color:var(--gold);letter-spacing:.14em;margin:0 0 14px}
     .tbody{font-size:14px;text-align:left;color:#e6dffb;margin:0}
+    /* バーナム的な箇条書き。属性ごとに4つ */
+    .tlist{list-style:none;margin:15px 0 0;padding:0;text-align:left}
+    .tlist .h{font-size:11px;color:var(--gold);letter-spacing:.16em;display:block;margin:0 0 8px}
+    .tlist li{font-size:13.5px;line-height:1.8;color:#e6dffb;
+      padding-left:17px;position:relative;margin-bottom:7px}
+    .tlist li:last-child{margin-bottom:0}
+    .tlist li::before{content:"";position:absolute;left:2px;top:.72em;width:6px;height:6px;
+      border-radius:50%;background:var(--gold);opacity:.85}
+
     .share{font-size:12px;color:var(--sub);margin:14px 0 0}
 
     .lv{display:flex;align-items:baseline;justify-content:center;gap:12px;margin:0 0 18px}
@@ -319,6 +328,7 @@
         <p class="tplain" id="rPlain"></p>
         <p class="tcatch" id="rCatch"></p>
         <p class="tbody" id="rBody"></p>
+        <ul class="tlist" id="rTraits"></ul>
         <p class="share" id="rShare"></p>
       </div>
       <p class="stat" id="rStat"></p>
@@ -378,14 +388,15 @@
   </footer>
 </div>
 
-<script src="data-types.js?v=16"></script>
-<script src="data-total.js?v=16"></script>
-<script src="data-work.js?v=16"></script>
-<script src="data-money.js?v=16"></script>
-<script src="data-friend.js?v=16"></script>
-<script src="data-love.js?v=16"></script>
-<script src="data-calendar.js?v=16"></script>
-<script src="data-people.js?v=16"></script>
+<script src="data-types.js?v=17"></script>
+<script src="data-barnum.js?v=17"></script>
+<script src="data-total.js?v=17"></script>
+<script src="data-work.js?v=17"></script>
+<script src="data-money.js?v=17"></script>
+<script src="data-friend.js?v=17"></script>
+<script src="data-love.js?v=17"></script>
+<script src="data-calendar.js?v=17"></script>
+<script src="data-people.js?v=17"></script>
 <script>
 (function(){
   "use strict";
@@ -702,6 +713,10 @@
       ? a.body
       : a.body + "\n\n" + BLOODS[res.temper].body;
     $("rBody").style.whiteSpace = "pre-line";
+    /* 属性ごとの箇条書き。血液型が「?」の時は星座だけで決まるセットを使う */
+    const traits = res.temper < 0 ? BARNUM_SIGN[res.attr] : BARNUM_TYPE[res.attr][res.temper];
+    $("rTraits").innerHTML = `<span class="h">こんなところ、ありませんか</span>` +
+      traits.map(t => `<li>${t}</li>`).join("");
     $("rShare").textContent = rangeText(a);
 
     const now = new Date();
