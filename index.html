@@ -16,6 +16,11 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <style>
     *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    /* 画像とボタンの長押しメニュー(保存/コピー)だけ止める。
+       占いは読みものなので、結果の文章は選んでコピーできるように残す */
+    img{-webkit-touch-callout:none;-webkit-user-drag:none;
+      -webkit-user-select:none;user-select:none}
+    button{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
     :root{
       --bg:#0b0617; --bg2:#150a30; --card:#1d1140; --line:rgba(255,255,255,.14);
       --txt:#f4f0ff; --sub:#b9addb; --accent:#a97bff; --gold:#e5c46a;
