@@ -76,6 +76,17 @@
     .homebtn:active{background:var(--accent);color:#150a30}
     .homebtn svg{width:21px;height:21px}
 
+    /* Purple Games(ハブ)へ戻るロゴ。ホームボタンと同じ位置に、トップ画面でだけ出す */
+    .parkbtn{position:fixed;z-index:50;
+      top:calc(env(safe-area-inset-top) + 12px);
+      left:max(12px, calc(50% - 280px + 16px));
+      display:none;line-height:0;padding:0;border:0;background:none;
+      -webkit-tap-highlight-color:transparent;transition:transform .12s ease}
+    .parkbtn.on{display:block}
+    .parkbtn:active{transform:scale(.94)}
+    .parkbtn img{display:block;width:clamp(46px,13vw,62px);height:auto;
+      filter:drop-shadow(0 2px 8px rgba(0,0,0,.45)) drop-shadow(0 0 6px rgba(168,130,255,.45))}
+
     /* --- トップ画面 --- */
     .lead{font-size:14.5px;color:#e6dffb;text-align:center;margin:2px 0 22px;line-height:2}
     .topcard{text-align:center;border:1.5px solid var(--gold);border-radius:20px;padding:26px 18px 22px;
@@ -234,6 +245,10 @@
     <path d="M5.4 10.2v9.4h4.3v-5.3h4.6v5.3h4.3v-9.4"/>
   </svg>
 </button>
+
+<a class="parkbtn on" id="parkBtn" href="https://purple-park.vercel.app/" aria-label="Purple Games のサイトへ戻る">
+  <img src="logo.png" alt="" draggable="false" />
+</a>
 
 <div class="wrap">
   <header class="top">
@@ -629,6 +644,8 @@
     screens.forEach(s => $(s).classList.toggle("on", s === id));
     /* ホームボタンはトップ以外の全画面で出す */
     $("homeBtn").classList.toggle("on", id !== "screen-top");
+    /* Purple Games へ戻るロゴはトップ画面でだけ出す(ホームボタンと同じ位置なので排他) */
+    $("parkBtn").classList.toggle("on", id === "screen-top");
     currentScreen = id;
     if(id === "screen-top") loadBoard();
     window.scrollTo(0, 0);
