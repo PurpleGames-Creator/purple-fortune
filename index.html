@@ -114,29 +114,32 @@
     .aura{filter:blur(16px);opacity:.62}
 
     /* --- 演出カード --- */
-    /* 本質は毎日変わらないのでめくらせない。横長1枚で最初から表に出す */
-    .essence{margin:22px auto 0;max-width:340px;border-radius:13px;padding:14px 16px;
+    /* 本質も相性も毎日変わらないのでめくらせない。横並び2枚で最初から表に出す */
+    .essrow{display:flex;gap:11px;margin:22px auto 0;max-width:340px}
+    .essence{flex:1;min-width:0;border-radius:13px;padding:14px 10px;
       border:1.5px solid var(--gold);background:linear-gradient(170deg,#3a2270,#1d1140);
-      display:flex;align-items:center;justify-content:center;gap:14px;text-align:left;
-      animation:essIn .55s ease both}
+      display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:6px;
+      text-align:center;animation:essIn .55s ease both}
+    .essence:last-child{animation-delay:.12s}
     @keyframes essIn{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
-    .essence svg{width:40px;height:40px;flex:none}
-    .essence .lbl{font-size:10.5px;color:var(--gold);letter-spacing:.16em;display:block}
-    .essence .val{font-size:17px;font-weight:800;line-height:1.3;display:block;margin-top:3px}
-    .essence .sub{font-size:12px;color:var(--sub);display:block;margin-top:3px}
+    .essence svg{width:34px;height:34px;flex:none}
+    .essence .lbl{font-size:10px;color:var(--gold);letter-spacing:.14em;display:block}
+    .essence .val{font-size:15px;font-weight:800;line-height:1.35;display:block;margin-top:2px}
+    .essence .sub{font-size:11px;color:var(--sub);display:block;margin-top:2px;line-height:1.4}
 
-    .deck{display:flex;gap:11px;justify-content:center;margin:14px 0 8px;perspective:1000px}
-    .tcard{flex:1;max-width:124px;aspect-ratio:2/3;border-radius:13px;position:relative;
+    /* 日替わりなのは今日の運勢だけ。横長1枚でここだけめくる */
+    .wdeck{margin:16px auto 0;max-width:340px;perspective:1000px}
+    .wcard{position:relative;width:100%;height:98px;border-radius:13px;
       transform-style:preserve-3d;transition:transform .75s cubic-bezier(.4,.1,.2,1);cursor:pointer}
-    .tcard.flip{transform:rotateY(180deg)}
+    .wcard.flip{transform:rotateY(180deg)}
     .tf,.tb{position:absolute;inset:0;border-radius:13px;backface-visibility:hidden;
       display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
       border:1.5px solid var(--gold);padding:8px;text-align:center}
     .tf{background:repeating-linear-gradient(45deg,#2a1758 0 7px,#331d68 7px 14px)}
-    .tf span{font-size:26px;color:var(--gold);opacity:.75}
+    .tf span{font-size:30px;color:var(--gold);opacity:.75}
     .tb{transform:rotateY(180deg);background:linear-gradient(170deg,#3a2270,#1d1140)}
     .tb .lbl{font-size:10.5px;color:var(--gold);letter-spacing:.16em}
-    .tb .val{font-size:15px;font-weight:800;line-height:1.35}
+    .tb .val{font-size:26px;font-weight:800;line-height:1.25;color:var(--gold)}
 
     /* --- 結果 --- */
     .typecard{text-align:center;border:1.5px solid var(--gold);border-radius:20px;padding:22px 16px;
@@ -399,13 +402,17 @@
   <section id="screen-draw" class="screen">
     <div class="panel" style="text-align:center">
       <div class="paputaro" id="drawChar"></div>
-      <div class="essence" id="essence"></div>
-      <p id="drawMsg" style="font-size:14px;color:var(--sub);margin:14px 0 0">カードをめくります…</p>
-      <div class="deck" id="deck">
-        <div class="tcard" data-i="0"><div class="tf"><span>✦</span></div><div class="tb"></div></div>
-        <div class="tcard" data-i="1"><div class="tf"><span>✦</span></div><div class="tb"></div></div>
+      <div class="essrow">
+        <div class="essence" id="essence"></div>
+        <div class="essence" id="essMatch"></div>
       </div>
-      <button class="btn sub" id="skip" style="margin-top:16px">結果を見る</button>
+      <p id="drawMsg" style="font-size:14px;color:var(--sub);margin:16px 0 0">今日の運勢をめくります…</p>
+      <div class="wdeck">
+        <div class="wcard" id="wcard" role="button" tabindex="0" aria-label="今日の運勢のカードをめくる">
+          <div class="tf"><span>✦</span></div><div class="tb"></div>
+        </div>
+      </div>
+      <button class="btn sub" id="skip" style="margin-top:18px">結果を見る</button>
     </div>
   </section>
 
@@ -516,15 +523,15 @@
   </footer>
 </div>
 
-<script src="data-types.js?v=18"></script>
-<script src="data-barnum.js?v=18"></script>
-<script src="data-total.js?v=18"></script>
-<script src="data-work.js?v=18"></script>
-<script src="data-money.js?v=18"></script>
-<script src="data-friend.js?v=18"></script>
-<script src="data-love.js?v=18"></script>
-<script src="data-calendar.js?v=18"></script>
-<script src="data-people.js?v=18"></script>
+<script src="data-types.js?v=19"></script>
+<script src="data-barnum.js?v=19"></script>
+<script src="data-total.js?v=19"></script>
+<script src="data-work.js?v=19"></script>
+<script src="data-money.js?v=19"></script>
+<script src="data-friend.js?v=19"></script>
+<script src="data-love.js?v=19"></script>
+<script src="data-calendar.js?v=19"></script>
+<script src="data-people.js?v=19"></script>
 <script>
 (function(){
   "use strict";
@@ -799,38 +806,51 @@
   $("go").disabled = true;
 
   /* 演出 */
-  function runDraw(res, done){
+  function runDraw(res){
     $("drawChar").innerHTML = charHtml(res.attr);
-    /* 本質は一生変わらない事実なので、めくらせずに最初から表で出す */
+
+    /* 本質も相性も誕生日と血液型だけで決まる=毎日変わらないので、めくらせず最初から表 */
     const ess = res.temper < 0
       ? { val: SIGNS[res.attr].name, sub: "" }
       : { val: attrName(res.attr, res.temper), sub: plainName(res.attr, res.temper) };
-    $("essence").innerHTML = symSvg(res.attr, 40) +
-      `<div><span class="lbl">あなたの本質</span><span class="val">${ess.val}</span>` +
-      (ess.sub ? `<span class="sub">${ess.sub}</span>` : "") + `</div>`;
+    $("essence").innerHTML = symSvg(res.attr, 34) +
+      `<span class="lbl">あなたの本質</span><span class="val">${ess.val}</span>` +
+      (ess.sub ? `<span class="sub">${ess.sub}</span>` : "");
 
-    const cards = document.querySelectorAll("#deck .tcard");
-    const backs = [
-      { lbl:"今日の運勢", val: res.level.name },
-      { lbl:"相性", val: plainName(res.good[0].attr, res.good[0].temper) }
-    ];
-    cards.forEach((c, i) => {
-      c.classList.remove("flip");
-      c.querySelector(".tb").innerHTML =
-        `<span class="lbl">${backs[i].lbl}</span><span class="val">${backs[i].val}</span>`;
-    });
-    const msgs = ["1枚目、今日の運勢…", "2枚目、あなたの相性…"];
+    const g = res.good[0];
+    $("essMatch").innerHTML = symSvg(g.attr, 34) +
+      `<span class="lbl">相性の良い人</span><span class="val">${plainName(g.attr, g.temper)}</span>` +
+      (g.temper < 0 ? "" : `<span class="sub">${attrName(g.attr, g.temper)}</span>`);
 
-    let i = 0, timer = null;
-    function step(){
-      if(i >= cards.length){ clearTimeout(timer); setTimeout(done, 900); return; }
-      cards[i].classList.add("flip");
-      $("drawMsg").textContent = msgs[i];
-      i++;
-      timer = setTimeout(step, 1250);
+    /* 日替わりなのは今日の運勢だけ。めくるのもここだけ */
+    const card = $("wcard"), btn = $("skip");
+    card.classList.remove("flip");
+    card.querySelector(".tb").innerHTML =
+      `<span class="lbl">今日の運勢</span><span class="val">${res.level.name}</span>`;
+    $("drawMsg").textContent = "今日の運勢をめくります…";
+    btn.classList.add("sub");   /* めくり終わるまでは控えめにしておく */
+
+    let flipped = false, after = null;
+    function flip(){
+      if(flipped) return;
+      flipped = true;
+      card.classList.add("flip");
+      card.removeAttribute("tabindex");
+      card.removeAttribute("role");
+      $("drawMsg").textContent = "";
+      /* めくり終わってから、結果へ進むボタンを主役にする(自動では遷移しない) */
+      after = setTimeout(() => {
+        $("drawMsg").textContent = "つづきは結果画面で";
+        btn.classList.remove("sub");
+      }, 780);
     }
-    timer = setTimeout(step, 700);
-    return () => clearTimeout(timer);
+    card.onclick = flip;
+    card.onkeydown = e => { if(e.key === "Enter" || e.key === " "){ e.preventDefault(); flip(); } };
+    const timer = setTimeout(flip, 900);
+    return () => {
+      clearTimeout(timer); clearTimeout(after);
+      card.onclick = null; card.onkeydown = null;
+    };
   }
 
   /* 結果の描画 */
@@ -1275,7 +1295,8 @@
     if(mode === "self") sendType(res, profile.n || null);
     if(animate){
       show("screen-draw");
-      cancelDraw = runDraw(res, () => { render(res, profile); show("screen-result"); });
+      /* 結果へは「結果を見る」ボタンでだけ進む(めくり終わっても自動遷移しない) */
+      cancelDraw = runDraw(res);
     }else{
       render(res, profile);
       show("screen-result");
@@ -1301,12 +1322,9 @@
   });
   $("nick").addEventListener("input", () => $("nickWarn").classList.remove("on"));
   $("skip").addEventListener("click", () => {
-    if(cancelDraw) cancelDraw();
-    document.querySelectorAll("#deck .tcard").forEach(c => c.classList.add("flip"));
+    if(cancelDraw){ cancelDraw(); cancelDraw = null; }
+    $("wcard").classList.add("flip");   /* めくる前に押した時のため */
     if(current){ render(current, null); show("screen-result"); }
-  });
-  document.querySelectorAll("#deck .tcard").forEach(c => {
-    c.addEventListener("click", () => c.classList.add("flip"));
   });
 
   function openInput(m){
