@@ -128,7 +128,7 @@
     .essence .sub{font-size:11px;color:var(--sub);display:block;margin-top:2px;line-height:1.4}
 
     /* 日替わりなのは今日の運勢だけ。横長1枚でここだけめくる */
-    .wdeck{margin:16px auto 0;max-width:340px;perspective:1000px}
+    .wdeck{margin:26px auto 0;max-width:340px;perspective:1000px}
     .wcard{position:relative;width:100%;height:98px;border-radius:13px;
       transform-style:preserve-3d;transition:transform .75s cubic-bezier(.4,.1,.2,1);cursor:pointer}
     .wcard.flip{transform:rotateY(180deg)}
@@ -419,7 +419,6 @@
         <div class="essence" id="essence"></div>
         <div class="essence" id="essMatch"></div>
       </div>
-      <p id="drawMsg" style="font-size:14px;color:var(--sub);margin:16px 0 0">今日の運勢をめくります…</p>
       <div class="wdeck">
         <div class="wcard" id="wcard" role="button" tabindex="0" aria-label="今日の運勢のカードをめくる">
           <div class="tf"><span>✦</span></div><div class="tb"></div>
@@ -529,7 +528,8 @@
   </section>
 
   <footer>
-    この占いはエンターテインメントです。結果の的中を保証するものではありません。<br />
+    この占いはエンターテインメントです。<br />
+    結果の的中を保証するものではありません。<br />
     血液型による性格の分類には科学的な根拠はありません。<br />
     歴史上の人物は氏名・生年月日・業績という事実のみを扱っています。<br />
     明治より前の日本の人物は新暦に換算した月日を用いています。<br />
@@ -841,7 +841,6 @@
     card.classList.remove("flip");
     card.querySelector(".tb").innerHTML =
       `<span class="lbl">今日の運勢</span><span class="val">${res.level.name}</span>`;
-    $("drawMsg").textContent = "今日の運勢をめくります…";
     btn.classList.add("sub");   /* めくり終わるまでは控えめにしておく */
 
     let flipped = false, after = null;
@@ -851,12 +850,8 @@
       card.classList.add("flip");
       card.removeAttribute("tabindex");
       card.removeAttribute("role");
-      $("drawMsg").textContent = "";
       /* めくり終わってから、結果へ進むボタンを主役にする(自動では遷移しない) */
-      after = setTimeout(() => {
-        $("drawMsg").textContent = "つづきは結果画面で";
-        btn.classList.remove("sub");
-      }, 780);
+      after = setTimeout(() => btn.classList.remove("sub"), 780);
     }
     card.onclick = flip;
     card.onkeydown = e => { if(e.key === "Enter" || e.key === " "){ e.preventDefault(); flip(); } };
