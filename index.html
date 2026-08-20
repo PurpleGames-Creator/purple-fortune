@@ -570,15 +570,15 @@
   </footer>
 </div>
 
-<script src="data-types.js?v=21"></script>
-<script src="data-barnum.js?v=21"></script>
-<script src="data-total.js?v=21"></script>
-<script src="data-work.js?v=21"></script>
-<script src="data-money.js?v=21"></script>
-<script src="data-friend.js?v=21"></script>
-<script src="data-love.js?v=21"></script>
-<script src="data-calendar.js?v=21"></script>
-<script src="data-people.js?v=21"></script>
+<script src="data-types.js?v=22"></script>
+<script src="data-barnum.js?v=22"></script>
+<script src="data-total.js?v=22"></script>
+<script src="data-work.js?v=22"></script>
+<script src="data-money.js?v=22"></script>
+<script src="data-friend.js?v=22"></script>
+<script src="data-love.js?v=22"></script>
+<script src="data-calendar.js?v=22"></script>
+<script src="data-people.js?v=22"></script>
 <script>
 (function(){
   "use strict";
@@ -911,9 +911,10 @@
     $("rCatch").textContent = res.temper < 0
       ? "血液型を選ぶと48タイプの属性が出ます"
       : a.types[res.temper].catch;
+    /* 血液型が分かる時は48タイプ固有の本文。「?」の時は星座だけの本文 */
     $("rBody").textContent = res.temper < 0
       ? a.body
-      : a.body + "\n\n" + BLOODS[res.temper].body;
+      : a.types[res.temper].body + "\n\n" + BLOODS[res.temper].body;
     $("rBody").style.whiteSpace = "pre-line";
     /* 属性ごとの箇条書き。血液型が「?」の時は星座だけで決まるセットを使う */
     const traits = res.temper < 0 ? BARNUM_SIGN[res.attr] : BARNUM_TYPE[res.attr][res.temper];
@@ -1269,7 +1270,7 @@
        <p class="tplain">${plainName(i, j)}</p>
        <p class="trange">${rangeText(s)}</p>
        <p class="tcatch">${t.catch}</p>
-       <p class="tbody" style="white-space:pre-line">${esc(s.body)}\n\n${esc(BLOODS[j].body)}</p>
+       <p class="tbody" style="white-space:pre-line">${esc(s.types[j].body)}\n\n${esc(BLOODS[j].body)}</p>
        <ul class="tlist"><span class="h">こんなところ、ありませんか</span>${
          BARNUM_TYPE[i][j].map(x => `<li>${esc(x)}</li>`).join("")}</ul>`;
 
