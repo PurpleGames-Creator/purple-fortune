@@ -310,14 +310,27 @@
 
     /* --- みんなの結果 --- */
     .board{margin:0;padding:0;list-style:none}
-    .board li{display:flex;align-items:center;gap:10px;padding:11px 2px;
-      border-bottom:1px dashed rgba(255,255,255,.1)}
+    .board li{border-bottom:1px dashed rgba(255,255,255,.1)}
     .board li:last-child{border-bottom:none}
+    /* 行ごと押せるようにする(押すとその人の属性ページへ) */
+    .board .brow{display:flex;align-items:center;gap:10px;width:100%;
+      padding:11px 20px 11px 2px;position:relative;
+      background:none;border:none;font:inherit;color:inherit;text-align:left;cursor:pointer;
+      -webkit-tap-highlight-color:transparent;transition:transform .12s ease}
+    .board .brow:active{transform:scale(.985)}
+    .board .brow:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:8px}
+    .board .brow .chev{position:absolute;right:2px;top:50%;transform:translateY(-50%);
+      color:var(--sub);font-size:13px}
     .board svg{flex:none}
     .board .who{font-size:14.5px;font-weight:700;flex:none;max-width:40%;
       overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     .board .ty{font-size:12.5px;color:var(--sub);margin-left:auto;text-align:right}
-    .board .empty{color:var(--sub);font-size:13px;justify-content:center}
+    .board .empty{color:var(--sub);font-size:13px;text-align:center;padding:11px 2px}
+
+    /* 「みんなの結果」から開いた時に、誰のページなのかを見失わないための1行 */
+    .whonote{font-size:12px;color:var(--gold);letter-spacing:.06em;text-align:center;
+      margin:0 0 12px;padding:9px 12px;border-radius:11px;
+      background:rgba(229,196,106,.12);border:1px solid rgba(229,196,106,.4)}
   </style>
 </head>
 <body>
@@ -504,6 +517,7 @@
 
     <!-- 3段目: 属性ごと -->
     <div id="list-l3" hidden>
+      <div id="typeNote"></div>
       <div class="panel" style="padding:0;border:none;background:none;box-shadow:none">
         <div class="typecard" id="typeCard"></div>
       </div>
@@ -1075,9 +1089,21 @@
       rows.sort((a, b) => bloodOrder(a) - bloodOrder(b) || a.attr - b.attr || a.i - b.i);
     }
     el.innerHTML = rows.map(r =>
-      `<li>${symSvg(r.attr, 20)}<span class="who">${esc(r.nick)}</span>
-        <span class="ty">${typeName(r.attr, r.temper)}</span></li>`).join("");
+      `<li><button type="button" class="brow" data-attr="${r.attr}" data-temper="${r.temper}"
+                   data-nick="${esc(r.nick)}"
+                   aria-label="${esc(r.nick)}さんの${typeName(r.attr, r.temper)}を見る">
+        ${symSvg(r.attr, 20)}<span class="who">${esc(r.nick)}</span>
+        <span class="ty">${typeName(r.attr, r.temper)}</span>
+        <span class="chev" aria-hidden="true">›</span>
+      </button></li>`).join("");
   }
+
+  /* 行をタップしたら、その人の属性ページ(図鑑の3段目)を開く。
+     血液型「?」で占った人は属性が 星座までしか決まらないので、星座のページ(2段目)まで。 */
+  $("board").addEventListener("click", e => {
+    const b = e.target.closest(".brow"); if(!b) return;
+    openListForPerson(+b.dataset.attr, +b.dataset.temper, b.dataset.nick);
+  });
 
   async function loadBoard(){
     const el = $("board");
@@ -1124,6 +1150,8 @@
   /* 図鑑を開くたびに数える。前に開いた時の履歴が後ろに残っていても、
      番号が違えば「図鑑の外」として扱えるので、戻る操作が前回の図鑑に迷い込まない */
   let listSid = 0;
+  /* 「みんなの結果」から開いた時の相手。{ nick, attr, temper } */
+  let listWho = null;
 
   /* 戻る操作のスクロール位置は自分で決める。
      既定の "auto" だとブラウザが記録した位置で上書きされ、
@@ -1151,9 +1179,17 @@
       </button>`).join("");
   }
 
+  /* 「みんなの結果」から開いた時だけ、その人の名前を出す。
+     ページャなどで別の型へ動いたら一致しなくなるので自動的に消える。 */
+  function whoNote(i, j){
+    if(!listWho) return "";
+    if(listWho.temper < 0 ? (listWho.attr !== i) : (listWho.attr !== i || listWho.temper !== j)) return "";
+    return `<p class="whonote">${esc(listWho.nick)} さんの本質</p>`;
+  }
+
   function buildL2(i){
     const s = SIGNS[i], me = myType();
-    $("signPanel").innerHTML =
+    $("signPanel").innerHTML = whoNote(i, -1) +
       `<div class="signhead">
          <div class="sh-sym">${symSvg(i, 34)}</div>
          <div>
@@ -1174,6 +1210,7 @@
 
   function buildL3(i, j){
     const s = SIGNS[i], t = s.types[j];
+    $("typeNote").innerHTML = whoNote(i, j);
     $("typeCard").innerHTML =
       `<div class="symbadge">${symSvg(i, 52)}</div>
        <p class="tname">${t.name}属性</p>
@@ -1406,10 +1443,27 @@
   function openList(){
     listFrom = currentScreen;
     listSid++;
+    listWho = null;
     listScroll[0] = listScroll[1] = listScroll[2] = 0;
     show("screen-list");
     applyList(0, 0, 0, false);
     pushListState(false);
+  }
+
+  /* 「みんなの結果」の行から、その人の属性ページへ直接入る。
+     図鑑を手でたどった時と履歴の積み方を揃えるため、1段目から順に積む。
+     こうしないとパンくずの history.go(段差) と端末の戻るが食い違う。 */
+  function openListForPerson(attr, temper, nick){
+    const deep = temper >= 0;          /* 血液型が分かる人だけ3段目まで行ける */
+    listFrom = currentScreen;
+    listSid++;
+    listWho = { nick, attr, temper };
+    listScroll[0] = listScroll[1] = listScroll[2] = 0;
+    show("screen-list");
+
+    applyList(0, 0, 0, false);         pushListState(false);
+    applyList(1, attr, null, false);   pushListState(false);
+    if(deep){ applyList(2, null, temper, false); pushListState(false); }
   }
   $("toList0").addEventListener("click", openList);
   $("toList2").addEventListener("click", openList);
