@@ -146,8 +146,14 @@
     /* 日替わりなのは今日の運勢だけ。横長1枚でここだけめくる */
     .wdeck{margin:26px auto 0;max-width:340px;perspective:1000px}
     .wcard{position:relative;width:100%;height:98px;border-radius:13px;
-      transform-style:preserve-3d;transition:transform .75s cubic-bezier(.4,.1,.2,1);cursor:pointer}
+      transform-style:preserve-3d;transition:transform .75s cubic-bezier(.4,.1,.2,1);cursor:pointer;
+      /* 連打対策。ダブルタップ拡大で反応が遅れるのと、
+         押しっぱなしで選択や長押しメニューが出るのを止める */
+      touch-action:manipulation;-webkit-tap-highlight-color:transparent;
+      -webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
     .wcard.flip{transform:rotateY(180deg)}
+    /* 最初のめくりだけゆっくり見せて、2回目以降は返しを速くする */
+    .wcard.quick{transition-duration:.42s}
     .tf,.tb{position:absolute;inset:0;border-radius:13px;backface-visibility:hidden;
       display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
       border:1.5px solid var(--gold);padding:8px;text-align:center}
@@ -882,25 +888,51 @@
 
     /* 日替わりなのは今日の運勢だけ。めくるのもここだけ */
     const card = $("wcard"), btn = $("skip");
-    card.classList.remove("flip");
+    card.classList.remove("flip", "quick");
     card.querySelector(".tb").innerHTML =
       `<span class="lbl">今日の運勢</span><span class="val">${res.level.name}</span>`;
     btn.classList.add("sub");   /* めくり終わるまでは控えめにしておく */
 
-    let flipped = false, after = null;
-    function flip(){
-      if(flipped) return;
-      flipped = true;
+    let revealed = false, timer = null, after = null, lastSfx = 0;
+
+    function setCardLabel(){
+      card.setAttribute("aria-label", card.classList.contains("flip")
+        ? "今日の運勢のカードを裏に戻す" : "今日の運勢のカードをめくる");
+    }
+    /* 連打で音が団子にならないよう最短間隔だけ空ける。
+       60ms は指では届かない速さなので、実際のタップが取りこぼされることはない。 */
+    function sfx(){
+      const now = performance.now();
+      if(now - lastSfx < 60) return;
+      lastSfx = now;
       playFlipSfx();
+    }
+    /* 最初の1回。放っておいても自動でめくれるし、先にタップしても同じ */
+    function reveal(){
+      if(revealed) return;
+      revealed = true;
+      clearTimeout(timer);
       card.classList.add("flip");
-      card.removeAttribute("tabindex");
-      card.removeAttribute("role");
+      sfx();
+      setCardLabel();
       /* めくり終わってから、結果へ進むボタンを主役にする(自動では遷移しない) */
       after = setTimeout(() => btn.classList.remove("sub"), 780);
     }
-    card.onclick = flip;
-    card.onkeydown = e => { if(e.key === "Enter" || e.key === " "){ e.preventDefault(); flip(); } };
-    const timer = setTimeout(flip, 900);
+    /* 2回目以降は押すたびに表裏が返る。
+       CSS の transition は途中で向きを変えても現在角度から引き継ぐので、
+       連打しても飛ばずにその場から反転する。 */
+    function toggleCard(){
+      if(!revealed){ reveal(); return; }
+      card.classList.add("quick");
+      card.classList.toggle("flip");
+      sfx();
+      setCardLabel();
+    }
+
+    card.onclick = toggleCard;
+    card.onkeydown = e => { if(e.key === "Enter" || e.key === " "){ e.preventDefault(); toggleCard(); } };
+    setCardLabel();
+    timer = setTimeout(reveal, 900);
     return () => {
       clearTimeout(timer); clearTimeout(after);
       card.onclick = null; card.onkeydown = null;
@@ -1415,7 +1447,7 @@
   $("nick").addEventListener("input", () => $("nickWarn").classList.remove("on"));
   $("skip").addEventListener("click", () => {
     if(cancelDraw){ cancelDraw(); cancelDraw = null; }
-    $("wcard").classList.add("flip");   /* めくる前に押した時のため */
+    $("wcard").classList.add("flip");   /* 裏のまま押された時のため、表にしておく */
     if(current){ render(current, null); show("screen-result"); }
   });
 
