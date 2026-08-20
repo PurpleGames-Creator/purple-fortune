@@ -155,13 +155,16 @@
     .lv b{font-size:38px;color:var(--gold);letter-spacing:.06em;line-height:1}
     .lv span{font-size:12px;color:var(--sub)}
 
+    /* 目には見せないが読み上げには渡すテキスト */
+    .sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;
+      clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0}
+
     .items{margin:0;padding:0;list-style:none}
     .items li{padding:12px 0;border-bottom:1px dashed rgba(255,255,255,.11)}
     .items li:last-child{border-bottom:none}
     .items .k{font-size:11.5px;color:var(--gold);letter-spacing:.16em;margin-bottom:3px;
-      display:flex;align-items:center;justify-content:space-between;gap:8px}
-    .items .wx{display:inline-flex;align-items:center;gap:6px;flex:none;
-      font-size:11px;color:var(--sub);letter-spacing:.02em}
+      display:flex;align-items:center;gap:4px}
+    .items .wx{display:inline-flex;align-items:center;flex:none;line-height:0}
     .items .wx svg{width:23px;height:23px;flex:none}
     .items .v{font-size:14.5px}
 
@@ -531,11 +534,11 @@
     return `<path d="M17.3 18.4H7.1a4.5 4.5 0 0 1-.6-8.95 6 6 0 0 1 11.3 1.55` +
            ` 3.75 3.75 0 0 1-.5 7.4z" fill="${c}"/>`;
   }
-  /* アイコンは装飾。読み上げには隣の「晴れ」等のテキストが使われる */
+  /* 画面にはマークだけ出す。「晴れ」等のテキストは読み上げ用に視覚的にだけ隠して残す */
   function wxHtml(tier){
     const w = WX[tier];
     return `<span class="wx"><svg viewBox="0 0 24 24" aria-hidden="true">${w.svg}</svg>` +
-           `<span>${w.name}</span></span>`;
+           `<span class="sr-only">${w.name}</span></span>`;
   }
 
 
