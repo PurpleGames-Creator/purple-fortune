@@ -673,10 +673,14 @@
       `<path d="M12 2.3v2.5M12 19.2v2.5M2.3 12h2.5M19.2 12h2.5` +
       `M5.2 5.2l1.8 1.8M17 17l1.8 1.8M18.8 5.2l-1.8 1.8M7 17l-1.8 1.8"/></g>` },
     mid: { name: "くもり", svg: CLOUD_PATH("#b9addb") },
+    /* 雨は傘で表す。雲を使うと「くもり」と形が似て見分けがつかないため。
+       雨粒を左右に添えて、傘だけでは伝わらない「降っている」を補う */
     low: { name: "雨", svg:
-      `<g transform="translate(0,-1.8)">${CLOUD_PATH("#9f93c4")}</g>` +
-      `<g stroke="#7fb6e8" stroke-width="2" stroke-linecap="round">` +
-      `<path d="M7.4 19.4l-1.2 2.8M12 19.4l-1.2 2.8M16.6 19.4l-1.2 2.8"/></g>` }
+      `<path d="M12 4.2a8.6 8.6 0 0 0-8.5 7.9h17A8.6 8.6 0 0 0 12 4.2z" fill="#7fb6e8"/>` +
+      `<g stroke="#cfe4f7" stroke-width="1.7" stroke-linecap="round" fill="none">` +
+      `<path d="M12 2.1v2.1"/><path d="M12 12.1v5.4a2 2 0 0 0 4 0"/></g>` +
+      `<g fill="#7fb6e8"><circle cx="4.3" cy="16.2" r="1.15"/>` +
+      `<circle cx="7.4" cy="20.2" r="1.15"/><circle cx="19.7" cy="16.2" r="1.15"/></g>` }
   };
   function CLOUD_PATH(c){
     return `<path d="M17.3 18.4H7.1a4.5 4.5 0 0 1-.6-8.95 6 6 0 0 1 11.3 1.55` +
