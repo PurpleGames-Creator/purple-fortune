@@ -40,6 +40,8 @@
       box-shadow:0 10px 40px rgba(0,0,0,.4)}
     .panel h2{font-size:14px;letter-spacing:.2em;color:var(--gold);margin:0 0 14px;
       border-bottom:1px solid var(--line);padding-bottom:10px;font-weight:700}
+    /* 見出しの先頭に置く日付。見出し語より控えめに */
+    .panel h2 .hdate{color:var(--sub);letter-spacing:0;font-weight:600;margin-right:10px}
 
     label.fld{display:block;font-size:13px;color:var(--sub);margin:0 0 7px;letter-spacing:.08em}
     .row{display:flex;gap:10px;margin-bottom:18px;align-items:flex-end}
@@ -62,6 +64,9 @@
     .btn:disabled{opacity:.42;box-shadow:none;cursor:default}
     .btn.sub{background:transparent;border:1px solid var(--line);color:var(--sub);
       box-shadow:none;font-size:14px;padding:13px;font-weight:600}
+    /* 消す直前の確認状態。取り消せない操作なので見た目を変えて知らせる */
+    .btn.sub.armed{color:#ffd9d2;border-color:rgba(227,154,143,.75);
+      background:rgba(227,154,143,.14);font-weight:800}
 
     /* --- ホームボタン(トップ以外の全画面に常時表示) --- */
     .homebtn{position:fixed;z-index:50;
@@ -168,10 +173,10 @@
     .items .wx svg{width:23px;height:23px;flex:none}
     .items .v{font-size:14.5px}
 
-    .lucky{display:flex;gap:11px;margin-top:14px}
-    .lucky div{flex:1;background:rgba(255,255,255,.05);border-radius:12px;padding:12px;text-align:center}
+    .lucky{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-top:14px}
+    .lucky div{background:rgba(255,255,255,.05);border-radius:12px;padding:12px;text-align:center}
     .lucky .k{font-size:10.5px;color:var(--gold);letter-spacing:.12em;display:block;margin-bottom:5px}
-    .lucky .v{font-size:14.5px;font-weight:700}
+    .lucky .v{font-size:14.5px;font-weight:700;line-height:1.55}
     .chip{display:inline-block;width:15px;height:15px;border-radius:50%;vertical-align:-2px;
       margin-right:6px;border:1px solid rgba(255,255,255,.5)}
 
@@ -190,6 +195,21 @@
     .match.spark .nm,.match.spark .rg{position:relative;z-index:1}
     .match.spark .bolt{position:absolute;right:14px;top:50%;transform:translateY(-50%);
       z-index:1;width:26px;height:26px}
+
+    /* 相性カードの中に出す該当者。いない時は行ごと出さない */
+    .match .mwho{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:10px;
+      padding-top:10px;border-top:1px dashed rgba(255,255,255,.13)}
+    .match .mwho-lbl{font-size:10.5px;color:var(--gold);letter-spacing:.1em;margin-right:2px}
+    .match .mchip{font-size:12.5px;font-weight:700;padding:3px 10px;border-radius:999px;
+      background:rgba(169,123,255,.18);border:1px solid rgba(169,123,255,.42)}
+    .match .mchip .mblood{font-size:10.5px;color:var(--sub);margin-left:5px;font-weight:600}
+
+    /* 「みんなの結果」の並べ替え */
+    .sortbar{display:flex;gap:7px;margin:0 0 12px}
+    .sortbar button{flex:1;padding:8px 2px;font-size:12px;border-radius:999px;background:#251545;
+      border:1px solid var(--line);color:var(--sub);cursor:pointer;
+      -webkit-tap-highlight-color:transparent}
+    .sortbar button.sel{background:var(--accent);border-color:var(--accent);color:#150a30;font-weight:800}
 
     .ppl{margin:0;padding:0;list-style:none}
     .ppl li{padding:9px 0;border-bottom:1px dashed rgba(255,255,255,.1);font-size:14px}
@@ -271,6 +291,11 @@
 
     <div class="panel" style="margin-top:16px">
       <h2>みんなの結果</h2>
+      <div class="sortbar" id="boardSort">
+        <button type="button" data-sort="new" class="sel">新しい順</button>
+        <button type="button" data-sort="sign">星座順</button>
+        <button type="button" data-sort="blood">血液型順</button>
+      </div>
       <ul class="board" id="board"><li class="empty">読み込み中…</li></ul>
       <p class="note">ニックネームを入れて占った人だけが並びます。生まれた日は表示されません。
         不適切な名前は予告なく削除します。</p>
@@ -330,12 +355,14 @@
   <!-- ===== 結果 ===== -->
   <section id="screen-result" class="screen">
     <div class="panel">
-      <h2>今日の運勢 <span id="rDate" style="float:right;color:var(--sub);letter-spacing:0"></span></h2>
-      <div class="lv"><b id="rLevel"></b><span id="rLevelSub"></span></div>
+      <h2><span id="rDate" class="hdate"></span>今日の運勢</h2>
+      <div class="lv"><b id="rLevel"></b></div>
       <ul class="items" id="rItems"></ul>
       <div class="lucky">
         <div><span class="k">ラッキーカラー</span><span class="v" id="rColor"></span></div>
         <div><span class="k">ラッキーアイテム</span><span class="v" id="rItem"></span></div>
+        <div><span class="k">ラッキーフード</span><span class="v" id="rFood"></span></div>
+        <div><span class="k">ラッキーアクション</span><span class="v" id="rAction"></span></div>
       </div>
     </div>
 
@@ -383,8 +410,8 @@
     <div style="height:9px"></div>
     <button class="btn sub" id="reset" style="color:#e39a8f;border-color:rgba(227,154,143,.35)">
       この端末のデータを消す</button>
-    <p class="note" style="text-align:center">誕生日・血液型・ニックネームをこの端末から消します。
-      「みんなの結果」に載った分は消えないので、消したい時は運営に伝えてください。</p>
+    <p class="note" style="text-align:center">誕生日・血液型・ニックネームをこの端末から消し、
+      「みんなの結果」に載ったこの端末の分も消します。消したあとは元に戻せません。</p>
   </section>
 
   <!-- ===== 48タイプ一覧 ===== -->
@@ -406,15 +433,15 @@
   </footer>
 </div>
 
-<script src="data-types.js?v=17"></script>
-<script src="data-barnum.js?v=17"></script>
-<script src="data-total.js?v=17"></script>
-<script src="data-work.js?v=17"></script>
-<script src="data-money.js?v=17"></script>
-<script src="data-friend.js?v=17"></script>
-<script src="data-love.js?v=17"></script>
-<script src="data-calendar.js?v=17"></script>
-<script src="data-people.js?v=17"></script>
+<script src="data-types.js?v=18"></script>
+<script src="data-barnum.js?v=18"></script>
+<script src="data-total.js?v=18"></script>
+<script src="data-work.js?v=18"></script>
+<script src="data-money.js?v=18"></script>
+<script src="data-friend.js?v=18"></script>
+<script src="data-love.js?v=18"></script>
+<script src="data-calendar.js?v=18"></script>
+<script src="data-people.js?v=18"></script>
 <script>
 (function(){
   "use strict";
@@ -596,8 +623,12 @@
 
     const rc = rngFrom(`${base}:${day}:color`);
     const ri = rngFrom(`${base}:${day}:item`);
+    const rf = rngFrom(`${base}:${day}:food`);
+    const rac = rngFrom(`${base}:${day}:action`);
     const color = pick(LUCKY_COLORS, rc);
     const item = pick(LUCKY_ITEMS, ri);
+    const food = pick(LUCKY_FOODS, rf);
+    const action = pick(LUCKY_ACTIONS, rac);
 
     /* 今日は誰の誕生日 */
     const now = new Date();
@@ -635,7 +666,7 @@
     const same = PEOPLE.filter(p => p.m === profile.m && p.d === profile.d)
       .sort((a, b) => (b.fame || 1) - (a.fame || 1)).slice(0, 3);
 
-    return { attr, temper, level, items, color, item, good, spark, people: chosen, same,
+    return { attr, temper, level, items, color, item, food, action, good, spark, people: chosen, same,
              todayPeople, dayNote, isMyBirthday, todayLabel: `${tm}月${td}日` };
   }
 
@@ -720,7 +751,9 @@
   }
 
   /* 結果の描画 */
+  let renderSeq = 0;
   function render(res, profile){
+    renderSeq++;
     const a = SIGNS[res.attr];
     $("resSym").innerHTML = symSvg(res.attr, 52);
     /* 見出しは属性名、その下に「双子座 × B型」を大きめに出す */
@@ -742,13 +775,14 @@
     const now = new Date();
     $("rDate").textContent = `${now.getMonth()+1}/${now.getDate()}`;
     $("rLevel").textContent = res.level.name;
-    $("rLevelSub").textContent = "今日の総合運";
 
     $("rItems").innerHTML = res.items.map(it =>
       `<li><span class="k">${it.label}${wxHtml(it.tier)}</span><span class="v">${it.text}</span></li>`).join("");
 
     $("rColor").innerHTML = `<span class="chip" style="background:${res.color.hex}"></span>${res.color.name}`;
     $("rItem").textContent = res.item;
+    $("rFood").textContent = res.food;
+    $("rAction").textContent = res.action;
     $("rTodayLabel").textContent = res.todayLabel;
     $("rBorn").innerHTML = res.todayPeople.length
       ? res.todayPeople.map(p =>
@@ -772,6 +806,7 @@
     };
     $("rGood").innerHTML = res.good.map(o => mk(o, "")).join("");
     $("rSpark").innerHTML = mk(res.spark, "spark");
+    loadMatchPeople(res);
 
     $("rPeople").innerHTML = res.people.length
       ? res.people.map(p =>
@@ -795,11 +830,11 @@
     const s = getSupa(); if(!s) return;
     try{
       const t = res.temper < 0 ? null : res.temper;
-      let q = s.from(TABLE).select("*", { count:"exact", head:true }).eq("attr", res.attr);
+      let q = s.from(TABLE).select("id", { count:"exact", head:true }).eq("attr", res.attr);
       q = t === null ? q.is("temper", null) : q.eq("temper", t);
       const [mine, all] = await Promise.all([
         q,
-        s.from(TABLE).select("*", { count:"exact", head:true })
+        s.from(TABLE).select("id", { count:"exact", head:true })
       ]);
       if(all.count && all.count >= 20 && mine.count != null){
         const pct = Math.round(mine.count / all.count * 1000) / 10;
@@ -807,16 +842,89 @@
       }
     }catch(e){ /* 表示しないだけ */ }
   }
+
+  /* 相性の良い型に当てはまる人を「みんなの結果」から拾って、カードの中に出す。
+     カードの型と完全一致(星座+血液型)した人だけ。血液型「?」で占った時は
+     カードの型が星座までしか決まらないので、その時だけ星座一致で当てる。 */
+  async function loadMatchPeople(res){
+    const s = getSupa(); if(!s) return;
+    const seq = renderSeq;
+    let rows;
+    try{
+      const r = await s.from(TABLE)
+        .select("nickname, attr, temper")
+        .not("nickname", "is", null)
+        .order("created_at", { ascending: false })
+        .limit(300);
+      if(r.error || !r.data || !r.data.length) return;
+      rows = r.data;
+    }catch(e){ return; }
+    if(seq !== renderSeq) return;   /* 待っている間に別の結果を描き直していたら捨てる */
+
+    /* 同じ人が何度も占っていることがあるので、ニックネームごとに最新の1件だけ残す */
+    const seen = new Set(), people = [];
+    for(const row of rows){
+      const nk = String(row.nickname || "").trim();
+      if(!nk || seen.has(nk)) continue;
+      seen.add(nk);
+      people.push({ nick: nk, attr: row.attr, temper: row.temper == null ? -1 : row.temper });
+    }
+
+    const cards = document.querySelectorAll("#rGood .match");
+    res.good.forEach((o, i) => {
+      const card = cards[i]; if(!card) return;
+      const hit = people.filter(p =>
+        p.attr === o.attr && (o.temper < 0 || p.temper === o.temper)).slice(0, 4);
+      if(!hit.length) return;
+      card.insertAdjacentHTML("beforeend",
+        `<div class="mwho"><span class="mwho-lbl">みんなの結果から</span>` +
+        hit.map(p => {
+          /* 「?」で占った人のカードだけ血液型がばらけるので、その時は血液型も添える */
+          const bl = (o.temper < 0 && p.temper >= 0)
+            ? `<span class="mblood">${BLOODS[p.temper].name}</span>` : "";
+          return `<span class="mchip">${esc(p.nick)}${bl}</span>`;
+        }).join("") + `</div>`);
+    });
+  }
+  /* ===== 端末ごとの削除キー =====
+     生のトークンはこの端末の localStorage にしか無く、サーバーには SHA-256 だけを送る。
+     削除は生トークンを受け取るサーバー関数だけが行うので、
+     保存されたハッシュが誰に見えても他人の行は消せない。 */
+  const DEVICE_KEY = "pf_device";
+  function getDeviceToken(){
+    try{
+      let t = localStorage.getItem(DEVICE_KEY);
+      if(!t){
+        t = (window.crypto && crypto.randomUUID ? crypto.randomUUID()
+                                                : Math.random().toString(36).slice(2))
+            + "-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2);
+        localStorage.setItem(DEVICE_KEY, t);
+      }
+      return t;
+    }catch(e){ return null; }
+  }
+  async function deviceHash(){
+    const t = getDeviceToken();
+    if(!t || !(window.crypto && crypto.subtle)) return null;
+    try{
+      const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(t));
+      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+    }catch(e){ return null; }   /* 古い環境では消せないだけで、占いは動く */
+  }
+
   async function sendType(res, nickname){
     const key = `${res.attr}-${res.temper}-${nickname || ""}`;
     if(localStorage.getItem("pf_sent") === key) return;
     const s = getSupa(); if(!s) return;
     try{
-      await s.from(TABLE).insert({
+      const row = {
         attr: res.attr,
         temper: res.temper < 0 ? null : res.temper,
         nickname: nickname || null
-      });
+      };
+      const h = await deviceHash();
+      if(h) row.device_hash = h;
+      await s.from(TABLE).insert(row);
       localStorage.setItem("pf_sent", key);
     }catch(e){ /* 送れなくても占いは動く */ }
   }
@@ -845,6 +953,29 @@
   }
 
   /* ===== みんなの結果(トップ) ===== */
+  /* 並べ替えは取ってきた一覧を並べ替えるだけにする。
+     サーバー側で order を変えると「新着20件」ではなく別の20人になってしまうため。 */
+  let boardRows = [];
+  let boardSort = "new";
+  const bloodOrder = r => r.temper < 0 ? 99 : r.temper;   /* 「?」は最後 */
+
+  function renderBoard(){
+    const el = $("board");
+    if(!boardRows.length){
+      el.innerHTML = `<li class="empty">まだ誰もいません。最初の1人になってください。</li>`;
+      return;
+    }
+    const rows = boardRows.slice();
+    if(boardSort === "sign"){
+      rows.sort((a, b) => a.attr - b.attr || bloodOrder(a) - bloodOrder(b) || a.i - b.i);
+    }else if(boardSort === "blood"){
+      rows.sort((a, b) => bloodOrder(a) - bloodOrder(b) || a.attr - b.attr || a.i - b.i);
+    }
+    el.innerHTML = rows.map(r =>
+      `<li>${symSvg(r.attr, 20)}<span class="who">${esc(r.nick)}</span>
+        <span class="ty">${typeName(r.attr, r.temper)}</span></li>`).join("");
+  }
+
   async function loadBoard(){
     const el = $("board");
     const s = getSupa();
@@ -855,19 +986,27 @@
         .not("nickname", "is", null)
         .order("created_at", { ascending: false })
         .limit(20);
-      if(error || !data || !data.length){
-        el.innerHTML = `<li class="empty">まだ誰もいません。最初の1人になってください。</li>`;
+      if(error || !data){
+        el.innerHTML = `<li class="empty">読み込めませんでした。</li>`;
         return;
       }
-      el.innerHTML = data.map(r => {
-        const t = (r.temper == null) ? -1 : r.temper;
-        return `<li>${symSvg(r.attr, 20)}<span class="who">${esc(r.nickname)}</span>
-          <span class="ty">${typeName(r.attr, t)}</span></li>`;
-      }).join("");
+      boardRows = data.map((r, i) => ({
+        i, nick: r.nickname, attr: r.attr, temper: (r.temper == null) ? -1 : r.temper
+      }));
+      renderBoard();
     }catch(e){
       el.innerHTML = `<li class="empty">読み込めませんでした。</li>`;
     }
   }
+
+  document.querySelectorAll("#boardSort button").forEach(b => {
+    b.addEventListener("click", () => {
+      document.querySelectorAll("#boardSort button").forEach(x => x.classList.remove("sel"));
+      b.classList.add("sel");
+      boardSort = b.dataset.sort;
+      renderBoard();
+    });
+  });
   function esc(s){
     return String(s).replace(/[&<>"']/g, c =>
       ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
@@ -948,13 +1087,52 @@
   $("again").addEventListener("click", () => openInput("guest"));
   $("edit").addEventListener("click", () => openInput("self"));
 
-  /* この端末に保存した内容を消してトップへ戻る。
-     公開済みの一覧(サーバー側)はここからは消せないので、その旨を画面に書いてある。 */
-  $("reset").addEventListener("click", () => {
+  /* この端末に保存した内容と、「みんなの結果」に載ったこの端末の分を消してトップへ戻る。
+     取り消せないので、1回目のタップでは確認の見た目に変えるだけにする。 */
+  const resetBtn = $("reset");
+  const RESET_LABEL = resetBtn.textContent.trim();
+  let resetArmed = false, resetTimer = null;
+  function disarmReset(){
+    resetArmed = false;
+    if(resetTimer){ clearTimeout(resetTimer); resetTimer = null; }
+    resetBtn.textContent = RESET_LABEL;
+    resetBtn.classList.remove("armed");
+  }
+  resetBtn.addEventListener("click", async () => {
+    if(!resetArmed){
+      resetArmed = true;
+      resetBtn.textContent = "本当に消す(取り消せません)";
+      resetBtn.classList.add("armed");
+      resetTimer = setTimeout(disarmReset, 6000);
+      return;
+    }
+    disarmReset();
+    resetBtn.disabled = true;
+    resetBtn.textContent = "消しています…";
+
+    /* サーバー側を先に消し、消せた時だけ端末のトークンも捨てる。
+       消せなかった時はトークンを残すので、次に押した時にやり直せる。 */
+    let serverOk = true;
+    let token = null;
+    try{ token = localStorage.getItem(DEVICE_KEY); }catch(e){ token = null; }
+    if(token){
+      const s = getSupa();
+      serverOk = false;
+      if(s){
+        try{
+          const { error } = await s.rpc("delete_fortune_by_token", { p_token: token });
+          serverOk = !error;
+        }catch(e){ serverOk = false; }
+      }
+    }
     try{
       localStorage.removeItem("pf_self");
       localStorage.removeItem("pf_sent");
+      if(serverOk) localStorage.removeItem(DEVICE_KEY);
     }catch(e){ /* 保存できない環境では何もしない */ }
+
+    resetBtn.disabled = false;
+    resetBtn.textContent = RESET_LABEL;
     current = null;
     sel = { m: 1, d: 1, t: null };
     $("nick").value = "";
