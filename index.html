@@ -140,6 +140,8 @@
     .essence .lbl{font-size:10px;color:var(--gold);letter-spacing:.14em;display:block}
     .essence .val{font-size:15px;font-weight:800;line-height:1.35;display:block;margin-top:2px}
     .essence .sub{font-size:11px;color:var(--sub);display:block;margin-top:2px;line-height:1.4}
+    /* 相性は3つあるが、ここは代表の1つだけ出して残りは件数で添える */
+    .essence .more{font-size:10px;color:var(--sub);opacity:.8;display:block;margin-top:4px}
 
     /* 日替わりなのは今日の運勢だけ。横長1枚でここだけめくる */
     .wdeck{margin:26px auto 0;max-width:340px;perspective:1000px}
@@ -868,10 +870,13 @@
       `<span class="lbl">あなたの本質</span><span class="val">${ess.val}</span>` +
       (ess.sub ? `<span class="sub">${ess.sub}</span>` : "");
 
-    const g = res.good[0];
+    /* 相性の良い人は3つあり順位も無いので、ここは先頭を代表として出し、
+       残りは件数で添える。全部は結果画面で並べている。 */
+    const g = res.good[0], more = res.good.length - 1;
     $("essMatch").innerHTML = symSvg(g.attr, 34) +
       `<span class="lbl">相性の良い人</span><span class="val">${plainName(g.attr, g.temper)}</span>` +
-      (g.temper < 0 ? "" : `<span class="sub">${attrName(g.attr, g.temper)}</span>`);
+      (g.temper < 0 ? "" : `<span class="sub">${attrName(g.attr, g.temper)}</span>`) +
+      (more > 0 ? `<span class="more">ほか${more}人</span>` : "");
 
     /* 日替わりなのは今日の運勢だけ。めくるのもここだけ */
     const card = $("wcard"), btn = $("skip");
