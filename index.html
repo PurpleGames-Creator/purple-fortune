@@ -150,7 +150,9 @@
       width:88px;height:88px;margin:2px auto 4px;border-radius:50%;
       background:rgba(255,255,255,.05);border:1px solid rgba(229,196,106,.35)}
     .tname{font-size:27px;font-weight:800;margin:10px 0 2px;letter-spacing:.06em}
-    .tplain{font-size:17px;font-weight:700;color:#fff;margin:0 0 8px;letter-spacing:.08em}
+    .tplain{font-size:17px;font-weight:700;color:#fff;margin:0 0 4px;letter-spacing:.08em}
+    /* 生まれ日の範囲。「双子座 × B型」の言い換えなので、その真下に置く */
+    .trange{font-size:11.5px;color:var(--sub);letter-spacing:.06em;margin:0 0 13px}
     .tcatch{font-size:13px;color:var(--gold);letter-spacing:.14em;margin:0 0 14px}
     .tbody{font-size:14px;text-align:left;color:#e6dffb;margin:0}
     /* バーナム的な箇条書き。属性ごとに4つ */
@@ -161,8 +163,6 @@
     .tlist li:last-child{margin-bottom:0}
     .tlist li::before{content:"";position:absolute;left:2px;top:.72em;width:6px;height:6px;
       border-radius:50%;background:var(--gold);opacity:.85}
-
-    .share{font-size:12px;color:var(--sub);margin:14px 0 0}
 
     .lv{display:flex;align-items:baseline;justify-content:center;gap:12px;margin:0 0 18px}
     .lv b{font-size:38px;color:var(--gold);letter-spacing:.06em;line-height:1}
@@ -447,10 +447,10 @@
         <div class="symbadge" id="resSym"></div>
         <p class="tname" id="rName"></p>
         <p class="tplain" id="rPlain"></p>
+        <p class="trange" id="rShare"></p>
         <p class="tcatch" id="rCatch"></p>
         <p class="tbody" id="rBody"></p>
         <ul class="tlist" id="rTraits"></ul>
-        <p class="share" id="rShare"></p>
       </div>
       <p class="stat" id="rStat"></p>
     </div>
@@ -1210,11 +1210,11 @@
       `<div class="symbadge">${symSvg(i, 52)}</div>
        <p class="tname">${t.name}属性</p>
        <p class="tplain">${plainName(i, j)}</p>
+       <p class="trange">${rangeText(s)}</p>
        <p class="tcatch">${t.catch}</p>
        <p class="tbody" style="white-space:pre-line">${esc(s.body)}\n\n${esc(BLOODS[j].body)}</p>
        <ul class="tlist"><span class="h">こんなところ、ありませんか</span>${
-         BARNUM_TYPE[i][j].map(x => `<li>${esc(x)}</li>`).join("")}</ul>
-       <p class="share">${rangeText(s)}</p>`;
+         BARNUM_TYPE[i][j].map(x => `<li>${esc(x)}</li>`).join("")}</ul>`;
 
     /* 同じ星座の中を行き来できるようにする(4つ全部を見比べたくなるため) */
     const pv = (j + 3) % 4, nx = (j + 1) % 4;
