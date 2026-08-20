@@ -229,17 +229,69 @@
       color:var(--gold);font-size:14px;font-weight:700;text-align:center}
     .mybd.on{display:block}
 
-    /* --- 一覧 --- */
+    /* --- 図鑑(48タイプ) --- */
+    [hidden]{display:none !important}
+
+    /* 現在地と戻り道。12星座 > 星座 > 属性 の3段 */
+    .crumb{display:flex;flex-wrap:wrap;align-items:center;margin:0 0 12px;font-size:12px}
+    .crumb button{background:none;border:none;padding:4px 2px;font:inherit;color:var(--accent);
+      cursor:pointer;text-decoration:underline;text-underline-offset:3px;
+      -webkit-tap-highlight-color:transparent}
+    .crumb button:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+    .crumb .sep{color:var(--sub);padding:0 5px}
+    .crumb .now{color:var(--sub)}
+
     .grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
-    .gcard{border:1px solid var(--line);border-radius:14px;padding:13px 11px;
-      background:linear-gradient(170deg,rgba(52,32,98,.7),rgba(22,12,50,.7))}
+    /* 押せることが分かるように button にして、右上に > と押し込みを付ける */
+    .gcard{position:relative;display:block;width:100%;text-align:left;font:inherit;color:inherit;
+      border:1px solid var(--line);border-radius:14px;padding:13px 24px 13px 11px;cursor:pointer;
+      background:linear-gradient(170deg,rgba(52,32,98,.7),rgba(22,12,50,.7));
+      -webkit-tap-highlight-color:transparent;transition:transform .12s ease}
+    .gcard:active{transform:scale(.97)}
+    .gcard:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+    .gcard .chev{position:absolute;right:9px;top:10px;color:var(--sub);font-size:14px}
     .gcard .hd{display:flex;align-items:center;gap:8px;margin-bottom:7px}
     .gcard svg{width:22px;height:22px;flex:none}
     .gcard .nm{font-size:15px;font-weight:800}
-    .gcard .rg{font-size:10.5px;color:var(--sub);margin-bottom:7px}
-    .gcard .vs{font-size:11.5px;color:#d9cffa;line-height:1.95}
+    .gcard .rg{display:block;font-size:10.5px;color:var(--sub);margin-bottom:7px}
+    .gcard .vs{display:block;font-size:11.5px;color:#d9cffa;line-height:1.95}
     .gcard .vs b{font-weight:800;color:var(--txt)}
     .gcard .vs span{color:var(--sub);font-size:10.5px}
+
+    /* 保存済みの誕生日・血液型と一致する所に出す目印 */
+    .mine{display:inline-block;font-size:9.5px;font-weight:800;letter-spacing:.08em;
+      color:#150a30;background:var(--gold);border-radius:999px;padding:2px 7px;margin-left:6px;
+      vertical-align:1px}
+
+    /* 星座の見出し */
+    .signhead{display:flex;align-items:center;gap:13px;margin:0 0 14px}
+    .signhead .sh-sym{flex:none;width:56px;height:56px;border-radius:50%;
+      display:flex;align-items:center;justify-content:center;
+      background:rgba(255,255,255,.05);border:1px solid rgba(229,196,106,.35)}
+    .signhead .sh-nm{font-size:21px;font-weight:800;letter-spacing:.06em;line-height:1.3}
+    .signhead .sh-sub{font-size:11.5px;color:var(--sub);line-height:1.7;margin-top:2px}
+
+    /* 星座の中の4属性 */
+    .alist{display:flex;flex-direction:column;gap:10px}
+    .acard{position:relative;display:block;width:100%;text-align:left;font:inherit;color:inherit;
+      border:1px solid var(--line);border-radius:14px;padding:14px 34px 14px 14px;cursor:pointer;
+      background:rgba(255,255,255,.05);-webkit-tap-highlight-color:transparent;
+      transition:transform .12s ease}
+    .acard:active{transform:scale(.98)}
+    .acard:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+    .acard .an{font-size:16px;font-weight:800}
+    .acard .ab{font-size:11.5px;color:var(--gold);letter-spacing:.12em;margin-left:8px}
+    .acard .ac{display:block;font-size:12.5px;color:var(--sub);margin-top:5px}
+    .acard .chev{position:absolute;right:13px;top:50%;transform:translateY(-50%);
+      color:var(--sub);font-size:14px}
+
+    /* 同じ星座の中を行き来する */
+    .pager{display:flex;gap:9px;margin:0 0 16px}
+    .pager button{flex:1;padding:11px 6px;font-size:12px;border-radius:12px;background:#251545;
+      border:1px solid var(--line);color:var(--sub);cursor:pointer;line-height:1.5;
+      -webkit-tap-highlight-color:transparent;transition:transform .12s ease}
+    .pager button:active{transform:scale(.97)}
+    .pager button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
     footer{text-align:center;font-size:11px;color:#7d6ea8;line-height:1.9;margin-top:34px;
       border-top:1px solid rgba(255,255,255,.08);padding-top:18px}
@@ -421,11 +473,37 @@
 
   <!-- ===== 48タイプ一覧 ===== -->
   <section id="screen-list" class="screen">
-    <div class="panel">
-      <h2>48タイプ図鑑</h2>
-      <p class="note" style="margin:0 0 16px">12星座 × 4血液型で48タイプ。組み合わせごとに属性が決まります(例: 双子座 × B型 なら疾風属性)。</p>
-      <div class="grid" id="listGrid"></div>
+    <nav class="crumb" id="listCrumb" aria-label="いま見ている場所"></nav>
+
+    <!-- 1段目: 12星座 -->
+    <div id="list-l1">
+      <div class="panel">
+        <h2>48タイプ図鑑</h2>
+        <p class="note" style="margin:0 0 16px">12星座 × 4血液型で48タイプ。組み合わせごとに属性が決まります(例: 双子座 × B型 なら疾風属性)。<br />
+          <b>星座をタップ</b>すると、その星座の4属性を読めます。</p>
+        <div class="grid" id="listGrid"></div>
+      </div>
     </div>
+
+    <!-- 2段目: 星座ごと -->
+    <div id="list-l2" hidden>
+      <div class="panel" id="signPanel"></div>
+      <div class="panel">
+        <h2>血液型で4つに分かれます</h2>
+        <p class="note" style="margin:0 0 14px">読みたい属性をタップしてください。</p>
+        <div class="alist" id="signTypes"></div>
+      </div>
+    </div>
+
+    <!-- 3段目: 属性ごと -->
+    <div id="list-l3" hidden>
+      <div class="panel" style="padding:0;border:none;background:none;box-shadow:none">
+        <div class="typecard" id="typeCard"></div>
+      </div>
+      <div class="pager" id="typePager"></div>
+      <div class="panel" id="typeMatch"></div>
+    </div>
+
     <button class="btn sub" id="backFromList">もどる</button>
   </section>
 
@@ -1017,16 +1095,177 @@
       ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
   }
 
-  /* 48タイプ一覧。星座ごとに 4 つの属性を並べる */
-  (function buildList(){
+  /* ===================== 48タイプ図鑑 =====================
+     1段目 12星座 → 2段目 星座(4属性) → 3段目 属性の詳細。
+     迷わないように戻り道を3つ用意する: パンくず / 下部ボタン(行き先を明記) / 端末の戻るボタン。 */
+  let listLv = 0, listSign = 0, listBlood = 0;
+  const listScroll = [0, 0, 0];
+  let listHistoryOk = false;
+  /* 図鑑を開くたびに数える。前に開いた時の履歴が後ろに残っていても、
+     番号が違えば「図鑑の外」として扱えるので、戻る操作が前回の図鑑に迷い込まない */
+  let listSid = 0;
+
+  /* 戻る操作のスクロール位置は自分で決める。
+     既定の "auto" だとブラウザが記録した位置で上書きされ、
+     図鑑で「見ていた星座の位置に戻す」処理が効かなくなる。
+     この画面はどこへ移っても先頭から読ませる作りなので、手動で困らない。 */
+  try{ if("scrollRestoration" in history) history.scrollRestoration = "manual"; }catch(e){}
+
+  /* 保存済みの誕生日・血液型。図鑑に「あなた」の目印を出すのに使う */
+  function myType(){
+    const v = readSelf();
+    if(!v) return null;
+    return { attr: signFromDate(v.m, v.d), temper: (v.t == null ? -1 : v.t) };
+  }
+
+  function buildL1(){
+    const me = myType();
     $("listGrid").innerHTML = SIGNS.map((s, i) => `
-      <div class="gcard">
-        <div class="hd">${symSvg(i, 22)}<span class="nm">${s.name}</span></div>
-        <div class="rg">${rangeText(s)}</div>
-        <div class="vs">${s.types.map((t, j) =>
-          `<b>${t.name}属性</b> <span>${BLOODS[j].name}</span>`).join("<br>")}</div>
-      </div>`).join("");
-  })();
+      <button type="button" class="gcard" data-sign="${i}" aria-label="${s.name}の4属性を見る">
+        <span class="chev" aria-hidden="true">›</span>
+        <span class="hd">${symSvg(i, 22)}<span class="nm">${s.name}</span>${
+          me && me.attr === i ? `<span class="mine">あなた</span>` : ""}</span>
+        <span class="rg">${rangeText(s)}</span>
+        <span class="vs">${s.types.map((t, j) =>
+          `<b>${t.name}属性</b> <span>${BLOODS[j].name}</span>`).join("<br>")}</span>
+      </button>`).join("");
+  }
+
+  function buildL2(i){
+    const s = SIGNS[i], me = myType();
+    $("signPanel").innerHTML =
+      `<div class="signhead">
+         <div class="sh-sym">${symSvg(i, 34)}</div>
+         <div>
+           <div class="sh-nm">${s.name}</div>
+           <div class="sh-sub">${s.yomi} ・ ${s.element}の星座<br>${rangeText(s)}</div>
+         </div>
+       </div>
+       <p class="tbody">${esc(s.body)}</p>`;
+    $("signTypes").innerHTML = s.types.map((t, j) => `
+      <button type="button" class="acard" data-blood="${j}"
+              aria-label="${t.name}属性(${s.name} × ${BLOODS[j].name})を読む">
+        <span class="chev" aria-hidden="true">›</span>
+        <span class="an">${t.name}属性</span><span class="ab">${BLOODS[j].name}</span>${
+          me && me.attr === i && me.temper === j ? `<span class="mine">あなた</span>` : ""}
+        <span class="ac">${t.catch}</span>
+      </button>`).join("");
+  }
+
+  function buildL3(i, j){
+    const s = SIGNS[i], t = s.types[j];
+    $("typeCard").innerHTML =
+      `<div class="symbadge">${symSvg(i, 52)}</div>
+       <p class="tname">${t.name}属性</p>
+       <p class="tplain">${plainName(i, j)}</p>
+       <p class="tcatch">${t.catch}</p>
+       <p class="tbody" style="white-space:pre-line">${esc(s.body)}\n\n${esc(BLOODS[j].body)}</p>
+       <ul class="tlist"><span class="h">こんなところ、ありませんか</span>${
+         BARNUM_TYPE[i][j].map(x => `<li>${esc(x)}</li>`).join("")}</ul>
+       <p class="share">${rangeText(s)}</p>`;
+
+    /* 同じ星座の中を行き来できるようにする(4つ全部を見比べたくなるため) */
+    const pv = (j + 3) % 4, nx = (j + 1) % 4;
+    $("typePager").innerHTML =
+      `<button type="button" data-blood="${pv}">‹ ${s.types[pv].name}属性<br>${BLOODS[pv].name}</button>` +
+      `<button type="button" data-blood="${nx}">${s.types[nx].name}属性 ›<br>${BLOODS[nx].name}</button>`;
+
+    /* 相性は誕生日が無くても星座と血液型だけで決まるので、図鑑でも出せる */
+    const ga = goodSigns(i), gt = BLOOD_GOOD[j];
+    const mk = (o, cls) => {
+      const at = SIGNS[o.attr];
+      return `<div class="match ${cls}"><p class="nm">${plainName(o.attr, o.temper)}</p>` +
+             `<span class="rg">${attrName(o.attr, o.temper)} ・ ${rangeText(at)}</span>` +
+             (cls === "spark" ? SPARK_BOLT : "") + `</div>`;
+    };
+    $("typeMatch").innerHTML =
+      `<h2>相性の良い人</h2>` +
+      ga.map((a, k) => mk({ attr: a, temper: gt[k] }, "")).join("") +
+      `<h2 style="margin-top:22px">刺激をくれる人</h2>` +
+      mk({ attr: sparkSign(i), temper: BLOOD_SPARK[j] }, "spark");
+  }
+
+  /* 表示の切り替え。restore=true の時だけ、前に見ていたスクロール位置に戻す */
+  function applyList(lv, i, j, restore){
+    listLv = lv;
+    if(i != null) listSign = i;
+    if(j != null) listBlood = j;
+    if(lv === 0) buildL1();
+    else if(lv === 1) buildL2(listSign);
+    else buildL3(listSign, listBlood);
+    $("list-l1").hidden = lv !== 0;
+    $("list-l2").hidden = lv !== 1;
+    $("list-l3").hidden = lv !== 2;
+
+    const c = [];
+    c.push(lv === 0 ? `<span class="now">48タイプ図鑑</span>`
+                    : `<button type="button" data-lv="0">48タイプ図鑑</button>`);
+    if(lv >= 1){
+      c.push(`<span class="sep" aria-hidden="true">›</span>`);
+      c.push(lv === 1 ? `<span class="now">${SIGNS[listSign].name}</span>`
+                      : `<button type="button" data-lv="1">${SIGNS[listSign].name}</button>`);
+    }
+    if(lv === 2){
+      c.push(`<span class="sep" aria-hidden="true">›</span>`);
+      c.push(`<span class="now">${SIGNS[listSign].types[listBlood].name}属性</span>`);
+    }
+    $("listCrumb").innerHTML = c.join("");
+    /* 1段目はパネルの見出しと同じ文字になるだけなので出さない */
+    $("listCrumb").hidden = (lv === 0);
+
+    /* 下部のボタンは「どこへ戻るのか」を必ず書く */
+    $("backFromList").textContent =
+      lv === 0 ? "もどる" :
+      lv === 1 ? "図鑑の一覧にもどる" : `${SIGNS[listSign].name}にもどる`;
+
+    window.scrollTo(0, restore ? (listScroll[lv] || 0) : 0);
+  }
+
+  function pushListState(replace){
+    try{
+      const st = { pfList: listLv, s: listSign, b: listBlood, sid: listSid };
+      if(replace) history.replaceState(st, ""); else history.pushState(st, "");
+      listHistoryOk = true;
+    }catch(e){ listHistoryOk = false; }   /* file:// などで使えない環境 */
+  }
+
+  /* 進む。同じ段の中の移動(属性の前後)は replace にして履歴を3段より深くしない */
+  function goList(lv, i, j, replace){
+    listScroll[listLv] = window.scrollY;
+    applyList(lv, i, j, false);
+    pushListState(replace);
+  }
+
+  $("listGrid").addEventListener("click", e => {
+    const b = e.target.closest(".gcard"); if(!b) return;
+    goList(1, +b.dataset.sign, null, false);
+  });
+  $("signTypes").addEventListener("click", e => {
+    const b = e.target.closest(".acard"); if(!b) return;
+    goList(2, null, +b.dataset.blood, false);
+  });
+  $("typePager").addEventListener("click", e => {
+    const b = e.target.closest("button"); if(!b) return;
+    goList(2, null, +b.dataset.blood, true);
+  });
+  $("listCrumb").addEventListener("click", e => {
+    const b = e.target.closest("button"); if(!b) return;
+    const lv = +b.dataset.lv;
+    /* 履歴を積んだ分だけ戻す。端末の戻るボタンと食い違わないようにする */
+    if(listHistoryOk) history.go(lv - listLv);
+    else applyList(lv, null, null, true);
+  });
+
+  /* 端末の戻るボタン。図鑑の中なら1段戻り、図鑑より前なら元の画面へ */
+  window.addEventListener("popstate", e => {
+    const st = e.state;
+    if(st && st.pfList != null && st.sid === listSid){
+      if(currentScreen !== "screen-list") show("screen-list");
+      applyList(st.pfList, st.s, st.b, true);
+    }else if(currentScreen === "screen-list"){
+      show(listFrom);
+    }
+  });
 
   /* ===================== 遷移 ===================== */
   let cancelDraw = null;
@@ -1146,10 +1385,21 @@
     goTop();
   });
 
-  function openList(){ listFrom = currentScreen; show("screen-list"); }
+  function openList(){
+    listFrom = currentScreen;
+    listSid++;
+    listScroll[0] = listScroll[1] = listScroll[2] = 0;
+    show("screen-list");
+    applyList(0, 0, 0, false);
+    pushListState(false);
+  }
   $("toList0").addEventListener("click", openList);
   $("toList2").addEventListener("click", openList);
-  $("backFromList").addEventListener("click", () => show(listFrom));
+  $("backFromList").addEventListener("click", () => {
+    if(listHistoryOk){ history.back(); return; }   /* popstate 側で1段戻す */
+    if(listLv === 0) show(listFrom);
+    else applyList(listLv - 1, null, null, true);
+  });
 
   /* トップへ戻る */
   function goTop(){
