@@ -411,7 +411,7 @@
         <button type="button" data-sort="blood">血液型順</button>
       </div>
       <ul class="board" id="board"><li class="empty">読み込み中…</li></ul>
-      <p class="note">ニックネームを入れて占った人だけが並びます。生まれた日は表示されません。
+      <p class="note">ニックネームを入れて占った人だけが、新しい順に50人まで並びます。生まれた日は表示されません。
         不適切な名前は予告なく削除します。</p>
     </div>
   </section>
@@ -1162,8 +1162,12 @@
   }
 
   /* ===== みんなの結果(トップ) ===== */
+  /* 何件まで載せるか。20 だと公開初日に占った人が押し出されて
+     「自分が載っていない」が起きたので広げた。 */
+  const BOARD_LIMIT = 50;
+
   /* 並べ替えは取ってきた一覧を並べ替えるだけにする。
-     サーバー側で order を変えると「新着20件」ではなく別の20人になってしまうため。 */
+     サーバー側で order を変えると「新着◯件」ではなく別の◯人になってしまうため。 */
   let boardRows = [];
   let boardSort = "new";
   const bloodOrder = r => r.temper < 0 ? 99 : r.temper;   /* 「?」は最後 */
@@ -1207,7 +1211,7 @@
         .select("nickname, attr, temper")
         .not("nickname", "is", null)
         .order("created_at", { ascending: false })
-        .limit(20);
+        .limit(BOARD_LIMIT);
       if(error || !data){
         el.innerHTML = `<li class="empty">読み込めませんでした。</li>`;
         return;
